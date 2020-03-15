@@ -31,6 +31,7 @@ def DWT(coverImage, watermarkImage):
     #DWT on cover image
     coverImage =  np.float32(coverImage)   
     coverImage /= 255;
+    
     coeffC = pywt.dwt2(coverImage, 'haar')
     cA, (cH, cV, cD) = coeffC
     
@@ -64,56 +65,56 @@ def DCT(coverImage, watermarkImage):
     blockSize = 8
     c1 = np.size(coverImage, 0)
     c2 = np.size(coverImage, 1)
-    max_message = (c1*c2)/(blockSize*blockSize)
+    max_message = (c1*c2)//(blockSize*blockSize)
 
     w1 = np.size(watermarkImage, 0)
     w2 = np.size(watermarkImage, 1)
 
     watermarkImage = np.round(np.reshape(watermarkImage,(w1*w2, 1)),0)
 
-    if w1*w2 > max_message:
-        print('Message too large to fit')
+    # if w1*w2 > max_message:
+    #     print('Message too large to fit')
 
-    message_pad = np.ones((max_message,1), np.float32)
-    message_pad[0:w1*w2] = watermarkImage
+    # message_pad = np.ones((max_message,1), np.float32)
+    # message_pad[0:w1*w2] = watermarkImage
 
-    watermarkedImage = np.ones((c1,c2), np.float32)
+    # watermarkedImage = np.ones((c1,c2), np.float32)
 
-    k=50
-    a=0
-    b=0
+    # k=50
+    # a=0
+    # b=0
 
-    for kk in range(max_message):
-        dct_block = cv2.dct(coverImage[b:b+blockSize, a:a+blockSize])
-        if message_pad[kk] == 0:
-            if dct_block[4,1]<dct_block[3,2]:
-                temp=dct_block[3,2]
-                dct_block[3,2]=dct_block[4,1]
-                dct_block[4,1]=temp
-        else:
-            if dct_block[4,1]>=dct_block[3,2]:
-                temp=dct_block[3,2]
-                dct_block[3,2]=dct_block[4,1]
-                dct_block[4,1]=temp
+    # for kk in range(max_message):
+    #     dct_block = cv2.dct(coverImage[b:b+blockSize, a:a+blockSize])
+    #     if message_pad[kk] == 0:
+    #         if dct_block[4,1]<dct_block[3,2]:
+    #             temp=dct_block[3,2]
+    #             dct_block[3,2]=dct_block[4,1]
+    #             dct_block[4,1]=temp
+    #     else:
+    #         if dct_block[4,1]>=dct_block[3,2]:
+    #             temp=dct_block[3,2]
+    #             dct_block[3,2]=dct_block[4,1]
+    #             dct_block[4,1]=temp
 
-        if dct_block[4,1]>dct_block[3,2]:
-            if dct_block[4,1] - dct_block[3,2] <k:
-                dct_block[4,1] = dct_block[4,1]+k/2
-                dct_block[3,2] = dct_block[3,2]-k/2
-        else:
-            if dct_block[3,2] - dct_block[4,1]<k:
-                dct_block[3,2] = dct_block[3,2]+k/2
-                dct_block[4,1] = dct_block[4,1]-k/2
+    #     if dct_block[4,1]>dct_block[3,2]:
+    #         if dct_block[4,1] - dct_block[3,2] <k:
+    #             dct_block[4,1] = dct_block[4,1]+k/2
+    #             dct_block[3,2] = dct_block[3,2]-k/2
+    #     else:
+    #         if dct_block[3,2] - dct_block[4,1]<k:
+    #             dct_block[3,2] = dct_block[3,2]+k/2
+    #             dct_block[4,1] = dct_block[4,1]-k/2
             
-        watermarkedImage[b:b+blockSize, a:a+blockSize]=cv2.idct(dct_block)
-        if a+blockSize>=c1-1:
-            a=0
-            b=b+blockSize
-        else:
-            a=a+blockSize
+    #     watermarkedImage[b:b+blockSize, a:a+blockSize]=cv2.idct(dct_block)
+    #     if a+blockSize>=c1-1:
+    #         a=0
+    #         b=b+blockSize
+    #     else:
+    #         a=a+blockSize
 
-    watermarkedImage_8 = np.uint8(watermarkedImage)
-    cv2.imshow('watermarked',watermarkedImage_8)
+    # watermarkedImage_8 = np.uint8(watermarkedImage)
+    # cv2.imshow('watermarked',watermarkedImage_8)
 
 def SVD(coverImage, watermarkImage):
     cv2.imshow('Cover Image',coverImage)
@@ -257,8 +258,8 @@ def DWT_DCT_SVD(coverImage, watermarkImage):
     cv2.imshow('watermarkedImage',watermarkedImage)
         
 if __name__ == "__main__":
-    coverImage = cv2.imread('lenna.png',0)
-    watermarkImage = cv2.imread('sign.png',0)
+    coverImage = cv2.imread('lenna.png',1)
+    watermarkImage = cv2.imread('sign.png',1)
 
     options = {1 : DWT,
            2 : DCT,
@@ -268,7 +269,7 @@ if __name__ == "__main__":
            6 : DWT_DCT_SVD,
     }
     #val = input('What type of embedding you want to perform?\n1.DWT\n2.DCT\n3.DFT\n4.SVD\n5.SVD-DWT\n6.SVD-DCT-DWT')
-    DWT(coverImage,watermarkImage)
+    DCT(coverImage,watermarkImage)
         
     cv2.waitKey(0)
     cv2.destroyAllWindows()

@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!-- Required meta tags -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
+<!-- Google Fonts -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap">
+<!-- Bootstrap core CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet">
+<!-- Material Design Bootstrap -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.16.0/css/mdb.min.css" rel="stylesheet">
+
+<title>Hello, world!</title>
+</head>
+<body>
+<center>
+<div class="container-fluid my-3">
+    <div class="row center-align">
+        <div class="col">
+            <div class="input-group mb-3">
+                <div class="custom-file">
+                <input class="custom-file-input" id="image-up" name="image" type="file" accept="image/*" onchange="original()">
+                <label class="custom-file-label" for="image-up" >Choose file</label>
+                </div>
+            </div> 
+            
+        </div>
+    </div>
+    <div class="row center-align">
+        <div class="col">
+            <h4>Original Image</h4>
+            <img id="ori-image" class="mw-100">
+
+        </div>
+    </div>
+    <div class="card text-center my-3 w-75">
+        <div class="card-header">
+          <ul class="nav nav-tabs card-header-tabs">
+            <li class="nav-item">
+              <a class="nav-link active" href="#">Text</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Gambar</a>
+            </li>
+          </ul>
+        </div>
+        <div class="card-body">
+          <h5 class="card-title">Hidden Object</h5>
+          <div class="md-form">
+            <textarea id="pesanTersembunyi" class="form-control md-textarea" length="120" rows="3"></textarea>
+            <label for="pesanTersembunyi">Masukkan Pesan ...</label>
+          </div>
+          <h5 class="status">0</h5>
+          <a href="#" class="btn btn-primary">Encode Pesan</a>
+        </div>
+      </div>
+</div>
+</center>
+
+
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<!-- JQuery -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<!-- Bootstrap tooltips -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.4/umd/popper.min.js"></script>
+<!-- Bootstrap core JavaScript -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.1/js/bootstrap.min.js"></script>
+<!-- MDB core JavaScript -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.16.0/js/mdb.min.js"></script>
+<script src="js/code.js"></script>
+</body>
+</html>

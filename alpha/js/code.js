@@ -411,11 +411,33 @@ function dilation() {
 	});
 }
 
+M.AutoInit();
+
 $(document).ready(function(){
-	console.log("cekcek");
+	$("#hidImage").hide();
 	$('#pesanTersembunyi').keyup(function( index ) {
 		let string = $(this).val();
 		let totString = string.length;
-		$('.status').text(totString);
+		if (totString>255) {
+			$('.status').text("Jumlah Karakter melebihi batas!");
+		}else{
+			$('.status').text(totString);
+		}
+		
+	});
+
+	$('input#input_text, textarea#textarea2').characterCounter();
+
+	$('a.secText').click(function(){
+		console.log("cek");
+		$("#hidText").show(); 
+    	$("#hidImage").hide();
+	});
+
+	$('a.secImage').click(function(){
+		console.log("cekcek");
+		$("#hidImage").show();
+		$("#hidText").hide(); 
+    	
 	});
 });

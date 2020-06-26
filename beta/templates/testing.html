@@ -14,7 +14,7 @@
           <input type="file" id="image-up" name="image" accept="image/*" onchange="original()">
         </div>
         <div class="file-path-wrapper">
-          <input class="file-path validate" type="text" placeholder="Pilih Cover Image">
+          <input class="file-path validate" type="text" placeholder="Pilih Citra 1">
         </div>
       </div>
 
@@ -24,7 +24,7 @@
           <input type="file" id="image-up" name="image" accept="image/*" onchange="original()">
         </div>
         <div class="file-path-wrapper">
-          <input class="file-path validate" type="text" placeholder="Pilih Stego Image">
+          <input class="file-path validate" type="text" placeholder="Pilih CItra 2">
         </div>
       </div>
     </div> 
@@ -68,8 +68,36 @@
       </div>
     </div>
   </div>
-
-  <div class="row center-align">
+  <div class="row">
+    <div class="col 13">
+      <div style="float: left; text-align: left;">
+        PSNR : 100 <br>
+        MSE  : 3
+      </div>
+    </div>
+    <div class="col s12 l12">
+        <table class="responsive-table">
+          <thead>
+            <th>ASPEK <br> IDENTIFIKASI</th>
+            <th>Image 1</th>
+            <th>Image 2</th>
+          </thead>
+          <tbody>
+            <tr>
+              <th>Citra</th>
+              <td>Gambar 1</td>
+              <td>Gambar 2</td>
+            </tr>
+            <tr>
+              <th>Hasil <br> Decode</th>
+              <td>opo ngono</td>
+              <td>opo ngono2</td>
+            </tr>
+          </tbody>
+        </table>
+    </div>
+  </div>
+  <!-- <div class="row center-align">
     <div class="col l3"></div>
     <div class="col s12 l6">
       <div class="file-field input-field">
@@ -83,5 +111,5 @@
       </div>
       <a href="#" class="btn blue darken-3">Identifikasi</a>
     </div> 
-  </div>
+  </div> -->
 {% endblock %}

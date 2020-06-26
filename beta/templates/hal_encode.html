@@ -56,13 +56,13 @@
           <div class="file-field input-field">
             <div class="btn blue darken-3">
               <span>Pilih Gambar</span>
-              <input type="file" name="hidden_image" accept="image/*" >
+              <input onchange="validateSize()" type="file" name="hidden_image" accept="image/*" id="hidimg-up">
             </div>
             <div class="file-path-wrapper">
               <input class="file-path validate" type="text" placeholder="Pilih Hidden Image">
             </div>
           </div>
-          <input type="submit" value="Encode Gambar" name="action" class="btn blue darken-3">
+          <input type="submit" value="Encode Gambar" name="action" class="btn blue darken-3" id="encode_gambar">
           <!--a href="/encode_gambar" >Encode Gambar</a-->
         </div>
       </div>

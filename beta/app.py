@@ -142,41 +142,50 @@ def process_encode(cover_img, hidden_text):
     # cek = cv2.imwrite(UPLOAD_FOLDER + encode_folder +"/IDCT_" + cover_img, img) 
     # # coverImage = cv2.resize(coverImage,(400,400))
 
+
+    # =====Wes jalan tp rung dadi====
     coverImage = cv2.imread(UPLOAD_FOLDER + "/" + cover_img,1)
     coverImage = cv2.cvtColor(coverImage, cv2.COLOR_BGR2RGB)
-    print(coverImage)
+    # print(coverImage)
     r1, g1, b1 = cv2.split(coverImage)
 
-    r3 = dct(r1)
-    g3 = dct(g1)
-    b3 = dct(b1)
+    # r3 = dct(r1)
+    # g3 = dct(g1)
+    # b3 = dct(b1)
 
-    # r3 = np.uint8(dct(r1))
-    # g3 = np.uint8(dct(g1))
-    # b3 = np.uint8(dct(b1))
+    r3 = cv2.dct(np.float32(r1))
+    g3 = cv2.dct(np.float32(g1))
+    b3 = cv2.dct(np.float32(b1))
     
+    # print("=====hasil DCT=====")
+
     img = cv2.merge((b3,g3,r3))
+    # print(img)
     cek = cv2.imwrite(UPLOAD_FOLDER + encode_folder +"/DCT-" + cover_img, img) 
 
     coverImage = cv2.imread(UPLOAD_FOLDER + "/"+ encode_folder +"/DCT-" + cover_img,1)
     coverImage = cv2.cvtColor(coverImage, cv2.COLOR_BGR2RGB)
     r3, g3, b3 = cv2.split(coverImage)
     
-    r1 = idct(r3)
-    g1 = idct(g3)
-    b1 = idct(b3)
+    # r1 = idct(r3)
+    # g1 = idct(g3)
+    # b1 = idct(b3)
 
-    # r1 = np.uint8(idct(r3))
-    # g1 = np.uint8(idct(g3))
-    # b1 = np.uint8(idct(b3))
+    r1 = cv2.idct(np.float32(r3))
+    g1 = cv2.idct(np.float32(g3))
+    b1 = cv2.idct(np.float32(b3))
+
+    # print("===Hasil IDCT====")
+    
 
     img = cv2.merge((b1,g1,r1))
+    # print(img)
     cek = cv2.imwrite(UPLOAD_FOLDER + encode_folder +"/IDCT-" + cover_img, img) 
 
 
     #DWT
     coverImage = cv2.imread(UPLOAD_FOLDER + "/" + cover_img,1)
-    print(coverImage)
+    # print(coverImage)
     cA, (cH, cV, cD) = dwt2(coverImage, 'haar')  
     coeffs = cA, (cH, cV, cD)
     # iki le nyematke LSB py ?

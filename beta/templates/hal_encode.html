@@ -12,7 +12,7 @@
     <div class="file-field input-field">
       <div class="btn blue darken-3">
         <span>Pilih Gambar</span>
-        <input type="file" id="image-up" name="ori_image" accept="image/*" onchange="original()">
+        <input type="file" id="image-up" name="ori_image" accept="image/*" onchange="original();validateImageSize();">
       </div>
       <div class="file-path-wrapper">
         <input class="file-path validate" type="text" placeholder="Pilih Cover Image">
@@ -46,7 +46,7 @@
       <div class="card-content grey lighten-4">
         <div id="textField">
           <div class="input-field col s12">
-            <textarea id="textarea2" class="materialize-textarea" data-length="255" name="hidden_text"></textarea>
+            <textarea id="textarea2" class="materialize-textarea" data-length="0" name="hidden_text"></textarea>
             <label for="textarea2">Masukkan Hidden Text</label>
           </div>
           <input type="submit" value="Encode Pesan" name="action" class="btn blue darken-3" id="encode_text">
@@ -56,7 +56,7 @@
           <div class="file-field input-field">
             <div class="btn blue darken-3">
               <span>Pilih Gambar</span>
-              <input onchange="validateSize()" type="file" name="hidden_image" accept="image/*" id="hidimg-up">
+              <input onchange="validateImageSize()" type="file" name="hidden_image" accept="image/*" id="hiding-up">
             </div>
             <div class="file-path-wrapper">
               <input class="file-path validate" type="text" placeholder="Pilih Hidden Image">

@@ -35,10 +35,10 @@ def go_upload(file_up):
 def process_encode(cover_img, hidden_text):
     global coverImage, hiddenObject, r1, g1, b1, r2, b2, g2
 
-    #LSB tok
-    #=================Library Stegano===========
-    secret = lsb.hide(UPLOAD_FOLDER + "/" + cover_img, hidden_text)
-    secret.save(UPLOAD_FOLDER + "/" + encode_folder + "/LSB-" + cover_img)
+    # #LSB tok
+    # #=================Library Stegano===========
+    # secret = lsb.hide(UPLOAD_FOLDER + "/" + cover_img, hidden_text)
+    # secret.save(UPLOAD_FOLDER + "/" + encode_folder + "/LSB-" + cover_img)
     
     #=================TEST=======================
     #  width, height = img.size
@@ -66,140 +66,61 @@ def process_encode(cover_img, hidden_text):
     #     return encoded
 
     #DCT
-    # coverImage = cv2.imread(UPLOAD_FOLDER + "/" + cover_img,1)
-    # coverImage = cv2.cvtColor(coverImage, cv2.COLOR_BGR2RGB)
-    # print(coverImage)
-    # r1, g1, b1 = cv2.split(coverImage)
-    
-    # # r1 = np.array([[154,150,169,100],
-    # #                 [171,136,96,141],
-    # #                 [146,130,95,99],
-    # #                 [150,99,124,109]])
-    # # g1 = np.array([[154,150,169,100],
-    # #                 [171,136,96,141],
-    # #                 [146,130,95,99],
-    # #                 [150,99,124,109]])
-    # # b1 = np.array([[154,150,169,100],
-    # #                 [171,136,96,141],
-    # #                 [146,130,95,99],
-    # #                 [150,99,124,109]])
-    # # # r1 = coverImage[:, :, 0]
-    # # # g1 = coverImage[:, :, 1]
-    # # # b1 = coverImage[:, :, 2]
-    # r3 = np.uint8(dct(r1))
-    # g3 = np.uint8(dct(g1))
-    # b3 = np.uint8(dct(b1))
-
-    # # # rf32 = np.float32(r1)/255 
-    # # # gf32 = np.float32(g1)/255
-    # # # bf32 = np.float32(b1)/255
-
-    # # # r2 = cv2.dct(rf32)
-    # # # g2 = cv2.dct(gf32)
-    # # # b2 = cv2.dct(bf32)
-
-    # # # r3 = np.uint8(r2)*255
-    # # # g3 = np.uint8(g2)*255
-    # # # b3 = np.uint8(b2)*255
-
-
-    # #coverImages = cv2.cvtColor(coverImage, cv2.COLOR_BGR2RGB)
-    # img = cv2.merge((b3,g3,r3))
-    # print("----------")
-    # print(img)
-    # print(UPLOAD_FOLDER + "/"+ encode_folder +"/DCT_" + cover_img)
-    # cek = cv2.imwrite(UPLOAD_FOLDER + encode_folder +"/DCT_" + cover_img, img) 
-
-    # coverImage = cv2.imread(UPLOAD_FOLDER + "/"+ encode_folder +"/" + cover_img,1)
-    # coverImage = cv2.cvtColor(coverImage, cv2.COLOR_BGR2RGB)
-    # print("----------")
-    # print(coverImage)
-    # r1, g1, b1 = cv2.split(coverImage)
-    # # # # r1 = coverImage[:, :, 0]
-    # # # # g1 = coverImage[:, :, 1]
-    # # # # b1 = coverImage[:, :, 2]
-
-    # # # rf32 = np.float32(r1)/255
-    # # # gf32 = np.float32(g1)/255
-    # # # bf32 = np.float32(b1)/255
-
-    # # # r2 = cv2.idct(rf32)
-    # # # g2 = cv2.idct(gf32)
-    # # # b2 = cv2.idct(bf32)
-
-    # # # r1 = np.uint8(r2)*255
-    # # # g1 = np.uint8(g2)*255
-    # # # b1 = np.uint8(b2)*255
-    # r1 = np.uint8(idct(r1))
-    # g1 = np.uint8(idct(g1))
-    # b1 = np.uint8(idct(b1))
-
-    # # print(r1)
-    # # #coverImages = cv2.cvtColor(coverImage, cv2.COLOR_BGR2RGB)
-    # img = cv2.merge((b1,g1,r1))
-    # print("----------")
-    # print(img)
-    # cek = cv2.imwrite(UPLOAD_FOLDER + encode_folder +"/IDCT_" + cover_img, img) 
-    # # coverImage = cv2.resize(coverImage,(400,400))
-
-
     # =====Wes jalan tp rung dadi====
     coverImage = cv2.imread(UPLOAD_FOLDER + "/" + cover_img,1)
     coverImage = cv2.cvtColor(coverImage, cv2.COLOR_BGR2RGB)
-    # print(coverImage)
     r1, g1, b1 = cv2.split(coverImage)
-
+    
     # r3 = dct(r1)
     # g3 = dct(g1)
     # b3 = dct(b1)
 
-    r3 = cv2.dct(np.float32(r1))
-    g3 = cv2.dct(np.float32(g1))
-    b3 = cv2.dct(np.float32(b1))
+    r1 = cv2.dct(np.float32(r1))
+    g1 = cv2.dct(np.float32(g1))
+    b1 = cv2.dct(np.float32(b1))
     
     # print("=====hasil DCT=====")
+    r1 = np.round(r1).astype(int)
+    g1 = np.round(g1).astype(int)
+    b1 = np.round(b1).astype(int)
 
-    img = cv2.merge((b3,g3,r3))
-    # print(img)
+    img = cv2.merge((b1,g1,r1))
     cek = cv2.imwrite(UPLOAD_FOLDER + encode_folder +"/DCT-" + cover_img, img) 
 
     coverImage = cv2.imread(UPLOAD_FOLDER + "/"+ encode_folder +"/DCT-" + cover_img,1)
     coverImage = cv2.cvtColor(coverImage, cv2.COLOR_BGR2RGB)
-    r3, g3, b3 = cv2.split(coverImage)
-    
-    # r1 = idct(r3)
-    # g1 = idct(g3)
-    # b1 = idct(b3)
+    r2, g2, b2 = cv2.split(coverImage)
 
-    r1 = cv2.idct(np.float32(r3))
-    g1 = cv2.idct(np.float32(g3))
-    b1 = cv2.idct(np.float32(b3))
+    r2 = cv2.idct(np.float32(r1))
+    g2 = cv2.idct(np.float32(g1))
+    b2 = cv2.idct(np.float32(b1))
 
     # print("===Hasil IDCT====")
-    
+    r2 = np.round(r2).astype(int)
+    g2 = np.round(g2).astype(int)
+    b2 = np.round(b2).astype(int)
 
-    img = cv2.merge((b1,g1,r1))
-    # print(img)
+    img = cv2.merge((b2,g2,r2))
     cek = cv2.imwrite(UPLOAD_FOLDER + encode_folder +"/IDCT-" + cover_img, img) 
 
 
-    #DWT
-    coverImage = cv2.imread(UPLOAD_FOLDER + "/" + cover_img,1)
-    # print(coverImage)
-    cA, (cH, cV, cD) = dwt2(coverImage, 'haar')  
-    coeffs = cA, (cH, cV, cD)
-    # iki le nyematke LSB py ?
-    # print(coeffs)
-    img = idwt2(coeffs, 'haar')
-    print("===Hasil DWT====")
-    print(np.uint8(img))
-    b1 = img[:, :, 0]
-    g1 = img[:, :, 1]
-    r1 = img[:, :, 2]
-    img = cv2.merge((b1,g1,r1))
-    print("=====")
-    print(np.uint8(img))
-    cek = cv2.imwrite(UPLOAD_FOLDER + encode_folder +"/DWT-" + cover_img, img)
+    # #DWT
+    # coverImage = cv2.imread(UPLOAD_FOLDER + "/" + cover_img,1)
+    # # print(coverImage)
+    # cA, (cH, cV, cD) = dwt2(coverImage, 'haar')  
+    # coeffs = cA, (cH, cV, cD)
+    # # iki le nyematke LSB py ?
+    # # print(coeffs)
+    # img = idwt2(coeffs, 'haar')
+    # print("===Hasil DWT====")
+    # print(np.uint8(img))
+    # b1 = img[:, :, 0]
+    # g1 = img[:, :, 1]
+    # r1 = img[:, :, 2]
+    # img = cv2.merge((b1,g1,r1))
+    # print("=====")
+    # print(np.uint8(img))
+    # cek = cv2.imwrite(UPLOAD_FOLDER + encode_folder +"/DWT-" + cover_img, img)
     return 'success'
 
 def process_decode(stego_img):

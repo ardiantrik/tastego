@@ -26,7 +26,6 @@
     <div class="col center-align s12 l6">
         <h4>Original Image</h4>
         <img id="ori-image" class="responsive-img">
-
     </div>
 </div>
 
@@ -56,12 +55,15 @@
           <div class="file-field input-field">
             <div class="btn blue darken-3">
               <span>Pilih Gambar</span>
-              <input onchange="validateImageSize()" type="file" name="hidden_image" accept="image/*" id="hiding-up">
+              <input onchange="hiddenimg();validateImageSize();" type="file" name="hidden_image" accept="image/*" id="hiding-up">
+              
             </div>
+            
             <div class="file-path-wrapper">
               <input class="file-path validate" type="text" placeholder="Pilih Hidden Image">
             </div>
           </div>
+          <img id="hid-image" class="responsive-img" width="50%"><br>
           <input type="submit" value="Encode Gambar" name="action" class="btn blue darken-3" id="encode_gambar">
           <!--a href="/encode_gambar" >Encode Gambar</a-->
         </div>

@@ -32,51 +32,82 @@ def go_upload(file_up):
     
     return filename
 
-def process_encode(cover_img, hidden_text):
-    global coverImage, hiddenObject, r1, g1, b1, r2, b2, g2
-
-    #LSB tok
-    #=================Library Stegano===========
-    # secret = lsb.hide(UPLOAD_FOLDER + "/" + cover_img, hidden_text)
-    # secret.save(UPLOAD_FOLDER + "/" + encode_folder + "/LSB-" + cover_img)
+def go_encodeLSB(r1,g1,b1,kontainer):
+    hit_kontainer = len(kontainer)
+    height,width = np.shape(r1)
+    index = 0
+    status_rgb = 0
+    for row in range(height):
+        for col in range(width):
+            if index<hit_kontainer:
+                if status_rgb == 0:
+                    bit_temp = f'{r1[row][col]:08b}'
+                    bit_lsb = list(bit_temp)
+                    bit_lsb[7] = kontainer[index]
+                    bit_temp = ''.join(bit_lsb)
+                    r1[row][col] = int(bit_temp,2)
+                elif status_rgb == 1:
+                    bit_temp = f'{g1[row][col]:08b}'
+                    bit_lsb = list(bit_temp)
+                    bit_lsb[7] = kontainer[index]
+                    bit_temp = ''.join(bit_lsb)
+                    g1[row][col] = int(bit_temp,2)
+                elif status_rgb == 2:
+                    bit_temp = f'{b1[row][col]:08b}'
+                    bit_lsb = list(bit_temp)
+                    bit_lsb[7] = kontainer[index]
+                    bit_temp = ''.join(bit_lsb)
+                    b1[row][col] = int(bit_temp,2)
+                index = index + 1
+                # if index>height*width and index<hit_kontainer and status == 0:
+            elif index<hit_kontainer and row == height and col == width:
+                status_rgb = status_rgb + 1
+                row=0
+                col=0
+                print("reset status" + str(status_rgb))
+            else:
+                break
     
-    #=================TEST=======================
-    # TO DO : ROMBAK BOSS
-    #  width, height = img.size
-    #     index = 0
-    #     for row in range(height):
-    #         for col in range(width):
-    #             if img.mode != 'RGB':
-    #                 #r, g, b ,a = img.getpixel((col, row))
-    #                 img = img.convert("RGB")
-    #                 r, g, b = img.getpixel((col, row))
-    #                 print ("r:"+str(r)+"_g:"+str(g)+"_b:"+str(b))
-    #             elif img.mode == 'RGB':
-    #                 r, g, b = img.getpixel((col, row))
-    #                 print ("r:"+str(r)+"_g:"+str(g)+"_b:"+str(b))
-    #             # first value is length of msg
-    #             if row == 0 and col == 0 and index < length:
-    #                 asc = length
-    #             elif index <= length:
-    #                 c = msg[index -1]
-    #                 asc = ord(c)
-    #             else:
-    #                 asc = b
-    #             encoded.putpixel((col, row), (r, g , asc))
-    #             index += 1
-    #     return encoded
+    return r1,g1,b1
 
-    # coverImage = cv2.imread(UPLOAD_FOLDER + "/" + cover_img,1)
-    # coverImage = cv2.cvtColor(coverImage, cv2.COLOR_BGR2RGB)
-    # hid = hidden_text
-    # numb_hid = len(hid)
-    # print(numb_hid)
-    # # print(hid)
-    # height, width, channel = coverImage.shape
-    # r1, g1, b1 = cv2.split(coverImage)
-    # index = 0
-    # # for row in range(height):
-    # #     for col in range(width):
+def process_encode(cover_img, hidden_text):
+    global coverImage, r1, g1, b1, r2, b2, g2
+
+    coverImage = cv2.imread(UPLOAD_FOLDER + "/" + cover_img,1)
+    coverImage = cv2.cvtColor(coverImage, cv2.COLOR_BGR2RGB)
+    hid = hidden_text+'~@&'
+    hit_hidden = len(hid)
+    print(hit_hidden)
+    kontainer = ''
+    for i in range(hit_hidden):
+        kontainer = kontainer + f'{ord(hid[i]):08b}'
+
+    r1, g1, b1 = cv2.split(coverImage)
+    
+    #LSB tok
+    r1, g1, b1 = go_encodeLSB(r1,g1,b1,kontainer)
+    img = cv2.merge((b1,g1,r1))
+    cek = cv2.imwrite(UPLOAD_FOLDER + encode_folder +"/LSB-" + cover_img, img)
+
+    #DCT
+    # bermasalah nang encode karena luwih seko 255
+    # print(r1)
+    r1 = np.round(cv2.dct(np.float32(r1))).astype(int)
+    g1 = np.round(cv2.dct(np.float32(g1))).astype(int)
+    b1 = np.round(cv2.dct(np.float32(b1))).astype(int)
+    print("============ENKODE==================")
+    print(r1)
+    r2, g2, b2 = go_encodeLSB(r1,g1,b1,kontainer)
+    print("==============================")
+    print(r2)
+    r2 = np.round(cv2.idct(np.float32(r2))).astype(int)
+    g2 = np.round(cv2.idct(np.float32(g2))).astype(int)
+    b2 = np.round(cv2.idct(np.float32(b2))).astype(int)
+    r3 = np.round(cv2.dct(np.float32(r2))).astype(int)
+    print("==============================")
+    print(r3)
+    img = cv2.merge((b2,g2,r2))
+    cek = cv2.imwrite(UPLOAD_FOLDER + encode_folder +"/DCT-" + cover_img, img)
 
             
 
@@ -122,82 +153,181 @@ def process_encode(cover_img, hidden_text):
 
 
     #DWT
-    coverImage = cv2.imread(UPLOAD_FOLDER + "/" + cover_img,1)
-    # print(coverImage)
-    coverImage = cv2.cvtColor(coverImage, cv2.COLOR_BGR2RGB)
-    r1, g1, b1 = cv2.split(coverImage)
+    # coverImage = cv2.imread(UPLOAD_FOLDER + "/" + cover_img,1)
+    # # print(coverImage)
+    # coverImage = cv2.cvtColor(coverImage, cv2.COLOR_BGR2RGB)
+    # r1, g1, b1 = cv2.split(coverImage)
     
-    rcA, (rcH, rcV, rcD) = dwt2(r1, 'haar')  
-    r1_coeffs = rcA.astype(int),(rcH.astype(int), rcV.astype(int), rcD.astype(int))
-    gcA, (gcH, gcV, gcD) = dwt2(g1, 'haar')  
-    g1_coeffs = gcA.astype(int),(gcH.astype(int), gcV.astype(int), gcD.astype(int))
-    bcA, (bcH, bcV, bcD) = dwt2(b1, 'haar')  
-    b1_coeffs = bcA.astype(int),(bcH.astype(int), bcV.astype(int), bcD.astype(int))
-    print(len(rcD))
-    # TO DO : iki le nyematke LSB py ?
-    klmt = hidden_text
-    x,y = np.shape(bcD)
-    z=0
-    for i in range(x):
-        for j in range(y):
-            if i==0 and j==0:
-                bcD[i][j] = len(klmt)
-            else:
-                if z<len(klmt):
-                    bcD[i][j] = ord(klmt[z])
-                    z = z+1
-                else:
-                    break
+    # rcA, (rcH, rcV, rcD) = dwt2(r1, 'haar')  
+    # r1_coeffs = rcA.astype(int),(rcH.astype(int), rcV.astype(int), rcD.astype(int))
+    # gcA, (gcH, gcV, gcD) = dwt2(g1, 'haar')  
+    # g1_coeffs = gcA.astype(int),(gcH.astype(int), gcV.astype(int), gcD.astype(int))
+    # bcA, (bcH, bcV, bcD) = dwt2(b1, 'haar')  
+    # b1_coeffs = bcA.astype(int),(bcH.astype(int), bcV.astype(int), bcD.astype(int))
+    # # print(len(rcD))
+    # # TO DO : iki le nyematke LSB py ?
+    # klmt = hidden_text
+    # print(klmt)
+    # x,y = np.shape(bcD)
+    # print(x)
+    # print(y)
+    # z=0
+    # for i in range(x):
+    #     for j in range(y):
+    #         if i==0 and j==0:
+    #             bcD[i][j] = len(klmt)
+    #             print(len(klmt))
+    #         else:
+    #             if z<len(klmt):
+    #                 bcD[i][j] = ord(klmt[z])
+    #                 z = z+1
+    #             else:
+    #                 break
     
-    b1_coeffs = bcA.astype(int),(bcH.astype(int), bcV.astype(int), bcD.astype(int))
-    # print(coeffs)
-    # img = idwt2(coeffs, 'haar')
-    full_r = idwt2(r1_coeffs, 'haar')
-    full_g = idwt2(g1_coeffs, 'haar')
-    full_b = idwt2(b1_coeffs, 'haar')
-    # print(full_r)
-    # print("===Hasil DWT====")
-    # print(np.uint8(img))
+    # b1_coeffs = bcA.astype(int),(bcH.astype(int), bcV.astype(int), bcD.astype(int))
+    # # print(coeffs)
+    # # img = idwt2(coeffs, 'haar')
+    # full_r = idwt2(r1_coeffs, 'haar')
+    # full_g = idwt2(g1_coeffs, 'haar')
+    # full_b = idwt2(b1_coeffs, 'haar')
+    # # print(full_r)
+    # # print("===Hasil DWT====")
+    # # print(np.uint8(img))
+    # bcA, (bcH, bcV, bcD) = dwt2(full_b, 'haar')  
+    # z=0
+    # kontainer = ''
+    # x,y = np.shape(bcD)
+    # for i in range(x):
+    #     for j in range(y):
+    #         if i == 0 and j == 0:
+    #             jumlah = np.round(bcD[i][j]).astype(int)
+    #             print(jumlah)
+    #         else:
+    #             if z<abs(jumlah):
+    #                 kontainer = kontainer + chr(np.round(bcD[i][j]).astype(int))
+    #                 z = z+1
+    #                 print(chr(np.round(bcD[i][j]).astype(int)))
+    #             else:
+    #                 break
+    # print(kontainer)
     
-    # b3 = img[:, :, 0]
-    # g3 = img[:, :, 1]
-    # r3 = img[:, :, 2]
-    img = cv2.merge((full_b.astype(int),full_g.astype(int),full_r.astype(int)))
-    # print(img)
+    # # b3 = img[:, :, 0]
+    # # g3 = img[:, :, 1]
+    # # r3 = img[:, :, 2]
+    # img = cv2.merge((full_b.astype(int),full_g.astype(int),full_r.astype(int)))
+    # # print(img)
     # print("=====")
-    # print(np.uint8(img))
-    cek = cv2.imwrite(UPLOAD_FOLDER + encode_folder +"/DWT-" + cover_img, img)
+    # # print(np.uint8(img))
+    # cek = cv2.imwrite(UPLOAD_FOLDER + encode_folder +"/DWT-" + cover_img, img)
     return 'success'
 
-def process_decode(stego_img):
+def go_decodeLSB(r1,g1,b1):
+    
+    height,width = np.shape(r1)
+    kontainer = ''
+    # x = 1
+    index = 0
+    status_rgb = 0
+    stop_check = ''
+    stop_kontainer = ''
+    stop_status = 0
+    for row in range(height):
+        for col in range(width):
+            if stop_status == 0 and status_rgb < 3:
+                if status_rgb == 0:
+                    bit_temp = f'{r1[row][col]:08b}'
+                    kontainer = kontainer + bit_temp[-1]
+                    stop_check = stop_check + bit_temp[-1]
+                elif status_rgb == 1:
+                    bit_temp = f'{g1[row][col]:08b}'
+                    kontainer = kontainer + bit_temp[-1]
+                    stop_check = stop_check + bit_temp[-1]
+                elif status_rgb == 2:
+                    bit_temp = f'{b1[row][col]:08b}'
+                    kontainer = kontainer + bit_temp[-1]
+                    stop_check = stop_check + bit_temp[-1]
+                index = index + 1
+
+                if index%8 == 0:
+                    stop_kontainer = stop_kontainer + chr(int(stop_check,2))
+                    if '~@&' in stop_kontainer:
+                        stop_status = 999
+                        print("STOP skuy")
+                        break
+                    else:
+                        stop_check = ''
+                # x = x + 1
+            elif row == height and col == width:
+                status_rgb = status_rgb + 1
+                row=0
+                col=0
+                print("reset status" + str(status_rgb))
+            else:
+                break
+
+    kontainer = stop_kontainer
+
+    for i in range(len(kontainer)):
+        if kontainer[i] == '~' and kontainer[i+1] == '@' and kontainer[i+2] == '&':
+            kontainer = kontainer[0:i]
+            break
+    
+    decodeLSB_result = kontainer
+    return decodeLSB_result
+    
+def process_decode(stego_img,stego_method):
     #LSB
+    # ======Iki kendalane ana nang pembatas=======
     # hidden_obj= lsb.reveal(UPLOAD_FOLDER + "/" +stego_img)
+    stegoImage = cv2.imread(UPLOAD_FOLDER + "/" + stego_img,1)
+    stegoImage = cv2.cvtColor(stegoImage, cv2.COLOR_BGR2RGB)
+    r1, g1, b1 = cv2.split(stegoImage)
+    
+    if stego_method == 'LSB':
+        kontainer = go_decodeLSB(r1,g1,b1)
+    elif stego_method == 'DCT':
+        # print("================DEKODE===============")
+        # print(r1)
+        r1 = np.round(cv2.dct(np.float32(r1))).astype(int)
+        g1 = np.round(cv2.dct(np.float32(g1))).astype(int)
+        b1 = np.round(cv2.dct(np.float32(b1))).astype(int)
+        print("=============")
+        print(r1)
+        kontainer = go_decodeLSB(r1,g1,b1)
+        # hidden_object = process_decodeDCT(new_stego_img)
+    elif stego_method == 'DWT':
+        kontainer = 'rung gawe DWT'
+        # hidden_object = process_decodeDWT(new_stego_img)
+    elif stego_method == 'ALL':
+        kontainer = 'rung gawe Kombinasi LSB+DCT+DWT'
+        # hidden_object = process_decodeALL(new_stego_img)
 
     #DCT
 
     # DWT
-    stegoImage = cv2.imread(UPLOAD_FOLDER + "/" + stego_img,1)
-    stegoImage = cv2.cvtColor(stegoImage, cv2.COLOR_BGR2RGB)
-    r1, g1, b1 = cv2.split(stegoImage)
+    # ======Iki kendalane ana nang ganti nek nang dekomposisi=======
+    # stegoImage = cv2.imread(UPLOAD_FOLDER + "/" + stego_img,1)
+    # stegoImage = cv2.cvtColor(stegoImage, cv2.COLOR_BGR2RGB)
+    # r1, g1, b1 = cv2.split(stegoImage)
 
-    bcA, (bcH, bcV, bcD) = dwt2(b1, 'haar')  
-    b1_coeffs = bcA.astype(int),(bcH.astype(int), bcV.astype(int), bcD.astype(int))
+    # bcA, (bcH, bcV, bcD) = dwt2(b1, 'haar')  
+    # # b1_coeffs = bcA.astype(int),(bcH.astype(int), bcV.astype(int), bcD.astype(int))
 
-    z=0
-    kontainer = ''
-    x,y = np.shape(bcD)
-    for i in range(x):
-        for j in range(y):
-            if i == 0 and j == 0:
-                jumlah = bcD[i][j].astype(int)
-                print(jumlah)
-            else:
-                if z<abs(jumlah):
-                    kontainer = kontainer + chr(abs(bcD[i][j].astype(int)))
-                    z = z+1
-                    print(abs(bcD[i][j].astype(int)))
-                else:
-                    break
+    # z=0
+    # kontainer = ''
+    # x,y = np.shape(bcD)
+    # for i in range(x):
+    #     for j in range(y):
+    #         if i == 0 and j == 0:
+    #             jumlah = np.round(bcD[i][j]).astype(int)
+    #             print(jumlah)
+    #         else:
+    #             if z<abs(jumlah):
+    #                 kontainer = kontainer + chr(np.round(bcD[i][j]).astype(int))
+    #                 z = z+1
+    #                 print(chr(np.round(bcD[i][j]).astype(int)) + ' or '+ str(np.round(bcD[i][j]).astype(int)) + ' from ' + str(bcD[i][j]))
+    #             else:
+    #                 break
     # print(kontainer)
     hidden_obj = kontainer
     return hidden_obj
@@ -232,7 +362,7 @@ def go_encode():
             new_cover_img = go_upload(cover_img)
             hidden_text = request.form['hidden_text']
             if process_encode(new_cover_img,hidden_text) == 'success':
-                return 'iso'
+                return render_template('hal_home.html')
             else:
                 return render_template('hal_error.html')
             
@@ -262,8 +392,11 @@ def go_encode():
 def go_decode():
     if request.method == 'POST':
         stego_img = request.files['file']
+        stego_method = request.form['method']
+        print(stego_method)
         new_stego_img = go_upload(stego_img)
-        hidden_object = process_decode(new_stego_img) 
+        hidden_object = process_decode(new_stego_img,stego_method) 
+
         if hidden_object != '':
             return hidden_object
         else:

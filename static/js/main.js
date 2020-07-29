@@ -77,6 +77,7 @@ function validateImageSize(){
 }
 
 M.AutoInit();
+//var instance = M.FormSelect.getInstance(elem);
 
 $(document).ready(function(){
 	
@@ -107,11 +108,14 @@ $(document).ready(function(){
 	$('textarea#textarea2').characterCounter();
 
 	$("#decode_object").click(function (){
+		var metode = $('#select-metode option:selected').val();
+		console.log(metode);
 		//DO NOT DELETE
 		//KANGGO MODAL DECODE
 		var fd = new FormData();
 		var files = $('#image-up')[0].files[0];
 		fd.append('file',files);
+		fd.append('method',metode);
 		
 		$.ajax({
             url: '/go_decode',

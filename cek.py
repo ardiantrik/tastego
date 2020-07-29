@@ -7,6 +7,12 @@ from pywt import dwt2, idwt2, dwt, idwt
 #                 [171,136,96,141],
 #                 [146,130,95,99],
 #                 [150,99,124,109]])
+
+# cek = np.array([[255,255,255,255],
+#                 [255,255,170,255],
+#                 [255,150,255,255],
+#                 [255,255,255,255]])
+
 cek = np.array([[154,150,169,100,154,150,169,100],
                 [171,136,96,141,171,136,96,141],
                 [146,130,95,99,146,130,95,99],
@@ -16,69 +22,69 @@ cek = np.array([[154,150,169,100,154,150,169,100],
                 [146,130,95,99,146,130,95,99],
                 [150,99,124,109,150,99,124,109]])
 
-# # cek = np.array([[154,150],
-# #                 [171,136]])
+cek = np.array([[154,150],
+                [171,136]])
 
-# cek_dct = cv2.dct(np.float32(cek))
-# # cek_dct = np.uint8(dct(cek))
-# cek_dct = np.round(cek_dct).astype(int)
-# print(cek_dct)
-# print("==================")
+cek_dct = cv2.dct(np.float32(cek))
+# cek_dct = np.uint8(dct(cek))
+cek_dct = np.round(cek_dct).astype(int)
+print(cek_dct)
+print("==================")
 
-# cek_idct = cv2.idct(np.float32(cek_dct))
-# # cek_idct = np.uint8(idct(cek_dct))
+cek_idct = cv2.idct(np.float32(cek_dct))
+# cek_idct = np.uint8(idct(cek_dct))
 
-# print(np.round(cek_idct).astype(int))
+print(np.round(cek_idct).astype(int))
 
 
-cA, (cH, cV, cD) = dwt2(cek, 'haar')  
-coeffs = cA, (cH, cV, cD)
-print(cD)
+# cA, (cH, cV, cD) = dwt2(cek, 'haar')  
+# coeffs = cA, (cH, cV, cD)
+# print(cD)
 
-# cek3 = np.array([[88,80],
-#                  [70,77]])
+# # cek3 = np.array([[88,80],
+# #                  [70,77]])
 
-klmt = 'MANTAppu JIWA'
-x,y = np.shape(cD)
-z=0
-for i in range(x):
-    for j in range(y):
-        if i==0 and j==0:
-            cD[i][j] = len(klmt)
-        else:
-            if z<len(klmt):
-                cD[i][j] = ord(klmt[z])
-                z = z+1
-            else:
-                break
+# klmt = 'MANTAppu JIWA'
+# x,y = np.shape(cA)
+# z=0
+# for i in range(x):
+#     for j in range(y):
+#         if i==0 and j==0:
+#             cA[i][j] = len(klmt)
+#         else:
+#             if z<len(klmt):
+#                 cA[i][j] = ord(klmt[z])
+#                 z = z+1
+#             else:
+#                 break
     
 
-# cD = cek3
-coeffs = cA, (cH, cV, cD)
+# # cD = cek3
+# coeffs = cA, (cH, cV, cD)
 
-print("==================")
-cek_idwt = idwt2(coeffs, 'haar')
+# print("==================")
+# cek_idwt = idwt2(coeffs, 'haar')
 
-print(np.uint8(cek_idwt))
-cA, (cH, cV, cD) = dwt2(cek_idwt, 'haar')  
-print("==================")
-z=0
-kont = ''
-for i in range(x):
-    for j in range(y):
-        if i == 0 and j == 0:
-            jumlah = cD[i][j].astype(int)
-            print(jumlah)
-        else:
-            if z<jumlah:
-                kont = kont+ chr(cD[i][j].astype(int))
-                z = z+1
-                print(z)
-            else:
-                break
+# print(np.uint8(cek_idwt))
+# cA, (cH, cV, cD) = dwt2(cek_idwt, 'haar')  
+# print("==================")
+# z=0
+# kont = ''
+# for i in range(x):
+#     for j in range(y):
+#         if i == 0 and j == 0:
+#             jumlah = cA[i][j].astype(int)
+#             print(jumlah)
+#         else:
+#             if z<jumlah:
+#                 kont = kont+ chr(cA[i][j].astype(int))
+#                 z = z+1
+#                 print(z)
+#             else:
+#                 break
 
 
-print(kont)
+# print(kont)
         
 
 

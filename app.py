@@ -37,36 +37,62 @@ def go_encodeLSB(r1,g1,b1,kontainer):
     height,width = np.shape(r1)
     index = 0
     status_rgb = 0
-    for row in range(height):
-        for col in range(width):
+    row = 0
+    row_reset = 0
+    row_stop = 0
+    # for row in range(height):
+    #     for col in range(width):
+    while row<height:
+        col = 0
+        col_reset = 0
+        while col<width:
             if index<hit_kontainer:
                 if status_rgb == 0:
                     bit_temp = f'{r1[row][col]:08b}'
                     bit_lsb = list(bit_temp)
-                    bit_lsb[7] = kontainer[index]
+                    bit_lsb[-1] = kontainer[index]
                     bit_temp = ''.join(bit_lsb)
                     r1[row][col] = int(bit_temp,2)
                 elif status_rgb == 1:
                     bit_temp = f'{g1[row][col]:08b}'
                     bit_lsb = list(bit_temp)
-                    bit_lsb[7] = kontainer[index]
+                    bit_lsb[-1] = kontainer[index]
                     bit_temp = ''.join(bit_lsb)
                     g1[row][col] = int(bit_temp,2)
                 elif status_rgb == 2:
                     bit_temp = f'{b1[row][col]:08b}'
                     bit_lsb = list(bit_temp)
-                    bit_lsb[7] = kontainer[index]
+                    bit_lsb[-1] = kontainer[index]
                     bit_temp = ''.join(bit_lsb)
                     b1[row][col] = int(bit_temp,2)
                 index = index + 1
                 # if index>height*width and index<hit_kontainer and status == 0:
             elif index<hit_kontainer and row == height and col == width:
                 status_rgb = status_rgb + 1
-                row=0
-                col=0
+                row_reset=1
+                col_reset=1
                 print("reset status" + str(status_rgb))
             else:
+                row_stop = 1
                 break
+            
+            if col_reset == 0:
+                col = col + 1
+                # print(col, 'iki col tambah')
+            else:
+                col = 0
+                col_reset=0
+
+        if row_stop != 0:
+            break
+
+        if row_reset == 0:
+            row = row + 1
+            # print(row, 'iki row tambah')
+        else:
+            row = 0
+            row_reset=0
+        
     
     return r1,g1,b1
 
@@ -79,8 +105,23 @@ def process_encode(cover_img, hidden_text):
     hit_hidden = len(hid)
     print(hit_hidden)
     kontainer = ''
+    kontainer2 = ''
+    kontainer_div = ['']
+    x = 0
     for i in range(hit_hidden):
         kontainer = kontainer + f'{ord(hid[i]):08b}'
+        kontainer2 = kontainer2 + f'{ord(hid[i]):08b}'
+        if (i+1)%8 == 0:
+            if x == 0:
+                kontainer_div[x] = kontainer2
+            else:
+                kontainer_div.append(kontainer2)
+            kontainer2 = ''
+            x = x + 1
+    if kontainer2 != '':
+        kontainer_div.append(kontainer2)
+    print(kontainer_div)
+    print(len(kontainer_div))
 
     r1, g1, b1 = cv2.split(coverImage)
     
@@ -91,22 +132,42 @@ def process_encode(cover_img, hidden_text):
 
     #DCT
     # bermasalah nang encode karena luwih seko 255
+    # print(len(kontainer_div))
     # print(r1)
-    r1 = np.round(cv2.dct(np.float32(r1))).astype(int)
-    g1 = np.round(cv2.dct(np.float32(g1))).astype(int)
-    b1 = np.round(cv2.dct(np.float32(b1))).astype(int)
-    print("============ENKODE==================")
-    print(r1)
-    r2, g2, b2 = go_encodeLSB(r1,g1,b1,kontainer)
-    print("==============================")
-    print(r2)
-    r2 = np.round(cv2.idct(np.float32(r2))).astype(int)
-    g2 = np.round(cv2.idct(np.float32(g2))).astype(int)
-    b2 = np.round(cv2.idct(np.float32(b2))).astype(int)
-    r3 = np.round(cv2.dct(np.float32(r2))).astype(int)
-    print("==============================")
-    print(r3)
-    img = cv2.merge((b2,g2,r2))
+    x,y = np.shape(r1)
+    z=0
+    i=0
+    while i<(int(x/8))*8:
+        j=0
+        while j<(int(y/8))*8:
+            r3 = r1[i:i+8,j:j+8]
+            g3 = g1[i:i+8,j:j+8]
+            b3 = b1[i:i+8,j:j+8]
+            
+            r3 = np.round(cv2.dct(np.float32(r3))).astype(int)
+            g3 = np.round(cv2.dct(np.float32(g3))).astype(int)
+            b3 = np.round(cv2.dct(np.float32(b3))).astype(int)
+
+            if z<len(kontainer_div):
+                print(z)
+                print(kontainer_div[z])
+                r3, g3, b3 = go_encodeLSB(r3,g3,b3,kontainer_div[z])
+                z = z + 1
+            else:
+                break
+
+            # r3 = np.round(cv2.idct(np.float32(r3))).astype(int)
+            # g3 = np.round(cv2.idct(np.float32(g3))).astype(int)
+            # b3 = np.round(cv2.idct(np.float32(b3))).astype(int)
+
+            r1[i:i+8,j:j+8] = r3
+            g1[i:i+8,j:j+8] = g3
+            b1[i:i+8,j:j+8] = b3
+
+            j = j + 8
+        i = i + 8
+
+    img = cv2.merge((b1,g1,r1))
     cek = cv2.imwrite(UPLOAD_FOLDER + encode_folder +"/DCT-" + cover_img, img)
 
             
@@ -231,8 +292,15 @@ def go_decodeLSB(r1,g1,b1):
     stop_check = ''
     stop_kontainer = ''
     stop_status = 0
-    for row in range(height):
-        for col in range(width):
+    row = 0
+    row_reset = 0
+    row_stop = 0
+    # for row in range(height):
+        # for col in range(width):
+    while row<height:
+        col = 0
+        col_reset = 0
+        while col<width:
             if stop_status == 0 and status_rgb < 3:
                 if status_rgb == 0:
                     bit_temp = f'{r1[row][col]:08b}'
@@ -259,18 +327,35 @@ def go_decodeLSB(r1,g1,b1):
                 # x = x + 1
             elif row == height and col == width:
                 status_rgb = status_rgb + 1
-                row=0
-                col=0
+                row_reset=1
+                col_reset=1
                 print("reset status" + str(status_rgb))
             else:
+                row_stop = 1
+                print(row, " dan ", col, "STOP KABEH")
                 break
 
-    kontainer = stop_kontainer
+            if col_reset == 0:
+                col = col + 1
+            else:
+                col = 0
+                col_reset=0
 
-    for i in range(len(kontainer)):
-        if kontainer[i] == '~' and kontainer[i+1] == '@' and kontainer[i+2] == '&':
-            kontainer = kontainer[0:i]
+        if row_stop != 0:
             break
+
+        if row_reset == 0:
+            row = row + 1
+        else:
+            row = 0
+            row_reset=0
+
+    kontainer = stop_kontainer
+    if height !=8 and width !=8:
+        for i in range(len(kontainer)):
+            if kontainer[i] == '~' and kontainer[i+1] == '@' and kontainer[i+2] == '&':
+                kontainer = kontainer[0:i]
+                break
     
     decodeLSB_result = kontainer
     return decodeLSB_result
@@ -287,14 +372,41 @@ def process_decode(stego_img,stego_method):
         kontainer = go_decodeLSB(r1,g1,b1)
     elif stego_method == 'DCT':
         # print("================DEKODE===============")
-        # print(r1)
-        r1 = np.round(cv2.dct(np.float32(r1))).astype(int)
-        g1 = np.round(cv2.dct(np.float32(g1))).astype(int)
-        b1 = np.round(cv2.dct(np.float32(b1))).astype(int)
-        print("=============")
-        print(r1)
-        kontainer = go_decodeLSB(r1,g1,b1)
-        # hidden_object = process_decodeDCT(new_stego_img)
+        x,y = np.shape(r1)
+        z=0
+        i=0
+        stop_x = 0
+        kontainer = ''
+        while i<(int(x/8))*8:
+            j=0
+            while j<(int(y/8))*8:
+                r3 = r1[i:i+8,j:j+8]
+                g3 = g1[i:i+8,j:j+8]
+                b3 = b1[i:i+8,j:j+8]
+                
+                # r3 = np.round(cv2.dct(np.float32(r3))).astype(int)
+                # g3 = np.round(cv2.dct(np.float32(g3))).astype(int)
+                # b3 = np.round(cv2.dct(np.float32(b3))).astype(int)
+
+                if '~@&' not in kontainer:
+                    kontainer = kontainer + go_decodeLSB(r3,g3,b3)
+                    z = z + 1
+                else:
+                    print(kontainer)
+                    for i in range(len(kontainer)):
+                        if kontainer[i] == '~' and kontainer[i+1] == '@' and kontainer[i+2] == '&':
+                            kontainer = kontainer[0:i]
+                            break
+                    print("tekan kene ra sih?")
+                    stop_x = 1
+                    break
+                j = j + 8
+
+            if stop_x != 0:
+                break
+            else:
+                i = i + 8
+
     elif stego_method == 'DWT':
         kontainer = 'rung gawe DWT'
         # hidden_object = process_decodeDWT(new_stego_img)

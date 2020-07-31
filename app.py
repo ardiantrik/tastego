@@ -8,8 +8,8 @@ from PIL import Image
 from io import BytesIO
 from werkzeug.utils import secure_filename
 from datetime import datetime
-from stegano import lsb
-from scipy.fftpack import dct, idct
+# from stegano import lsb
+# from scipy.fftpack import dct, idct
 from pywt import dwt2, idwt2
 
 encode_folder = "Encoded_image_" + str(datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))

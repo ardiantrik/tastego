@@ -43,8 +43,9 @@ function validateImageSize(){
 				img2.onload = () => {
 					img2D = img2.height*img2.width;
 					lenb = base64_2.length;
-					console.log(img1D/24);
+					console.log(img1D/32);
 					console.log(lenb);
+					// why 32? 1 gambar bagi 8x8 , trus bagi meneh 4 bagian DWT
 					if (parseInt(img1D/24)<=lenb) {
 						document.getElementById("encode_gambar").value = 'Ukuran Melebihi Cover!';
 						document.getElementById("encode_gambar").disabled = true;
@@ -90,7 +91,7 @@ $(document).ready(function(){
 				document.getElementById("textarea2").setAttribute("data-length", parseInt(img1D/24));
 				let string = $(this).val();
 				let totString = string.length;
-				if (totString>(img1D/24)) {
+				if (totString>(img1D/32)) {
 					document.getElementById("encode_text").value = 'Teks Melebihi Batas!';
 					document.getElementById("encode_text").disabled = true;
 				}else{

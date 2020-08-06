@@ -3,10 +3,15 @@ import numpy as np
 from scipy.fftpack import dct, idct
 from pywt import dwt2, idwt2, dwt, idwt
 
-cek = np.array([[154,150,169,100],
-                [171,136,96,141],
-                [146,130,95,99],
-                [150,99,124,109]])
+# cek = np.array([[154,150,169,100],
+#                 [171,136,96,141],
+#                 [146,130,95,99],
+#                 [150,99,124,109]])
+
+cek = np.array([[154,150,169,65],
+                [70,96,136,141],
+                [130,150,95,99],
+                [146,99,124,109]])
 
 # cek = np.array([[255,255,255,255],
 #                 [255,255,170,255],
@@ -25,21 +30,25 @@ cek = np.array([[154,150,169,100],
 # cek = np.array([[154,150],
 #                 [171,136]])
 
-cek_dct = cv2.dct(np.float32(cek))
-# cek_dct = np.uint8(dct(cek))
-cek_dct = np.round(cek_dct).astype(int)
-print(cek_dct)
+# cek_dct = cv2.dct(np.float32(cek))
+# # cek_dct = np.uint8(dct(cek))
+# cek_dct = np.around(cek_dct).astype(int)
+# print(cek_dct)
+# print("==================")
+
+# cek_idct = cv2.idct(np.float32(cek_dct))
+# # cek_idct = np.uint8(idct(cek_dct))
+
+# print(np.around(cek_idct,1))
+
+
+cA, (cH, cV, cD) = dwt2(cek, 'haar')  
+coeffs = cA, (cH, cV, cD)
+print(coeffs)
+
 print("==================")
-
-cek_idct = cv2.idct(np.float32(cek_dct))
-# cek_idct = np.uint8(idct(cek_dct))
-
-print(np.round(cek_idct).astype(int))
-
-
-# cA, (cH, cV, cD) = dwt2(cek, 'haar')  
-# coeffs = cA, (cH, cV, cD)
-# print(cD)
+cek_idwt = idwt2(coeffs, 'haar')
+print(np.round(cek_idwt).astype(int))
 
 # # cek3 = np.array([[88,80],
 # #                  [70,77]])

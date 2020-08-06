@@ -7,20 +7,26 @@
 {% block body %}
 <div class="row">
   <div class="row">
+    <!-- <select hidden id="select-metode"> -->
     {% for result in result %}
     <div class="col s12 m6">
       <div class="card large">
         <div class="card-content">
           <span class="card-title">{{ result.method }}</span>
+          MSE: {{ result.mse }} <br>
+          PSNR: {{ result.psnr }} 
           <img src="{{ result.file_name }}" class="responsive-img" style="max-height: 350px;">
         </div>
+        <!-- <option hidden value="{{ result.method }}"></option> -->
         <div class="card-action">
-          <a href="#" class="btn blue darken-3">ENCODE</a>
+          <!-- <a href="#" class="btn blue darken-3">ENCODE</a> -->
+          <a class="waves-effect waves-light btn modal-trigger blue darken-3" href="#modal1" id="decode_object">DECODE</a>
           <a href="#" class="btn blue darken-3">DOWNLOAD</a>
         </div>
       </div>
     </div>
     {% endfor %}
+  <!-- </select> -->
 
     <!-- <div class="col s12 m6">
       <div class="card large">
@@ -63,6 +69,17 @@
       </div>
       
     </div> -->
+    <!-- Modal Structure
+    <div id="modal1" class="modal">
+      <div class="modal-content">
+        <h4>Hasil Decode</h4>
+        <p id="hidden_object">bla bla kudune plain text po hidden image</p>
+      </div>
+      <div class="modal-footer">
+        <a href="#!" class="modal-close waves-effect waves-green btn-flat">Tutup</a>
+      </div>
+    </div> -->
+
   </div> 
 </div>
 

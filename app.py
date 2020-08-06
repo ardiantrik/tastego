@@ -37,6 +37,8 @@ def go_upload(file_up):
 
 def go_psnr(cover_img,stego_img):
     mse = np.mean((cover_img - stego_img) ** 2 )
+    # mse = np.sum((cover_img - stego_img) ** 2 )
+    # mse /= float(cover_img.shape[0] * cover_img.shape[1]);
     # print("MSE : " + str(mse))
     if mse == 0:
         psnr = 100
@@ -209,9 +211,10 @@ def process_encode(cover_img, hidden_text):
         else:
             break
     img = cv2.merge((b1,g1,r1))
-    stego = img
+    stegoLSB = img
     cek = cv2.imwrite(RESULT_FOLDER + encode_folder +"/LSB-" + cover_img, img)
-    mse,psnr = go_psnr(cover,stego)
+    mse,psnr = go_psnr(cover,stegoLSB)
+    print(mse, " ", psnr)
     dataLSB = {
         'file_name':"/static/result/"+ encode_folder +"/LSB-" + cover_img,
         'method':'LSB',
@@ -261,9 +264,10 @@ def process_encode(cover_img, hidden_text):
             i = i + 8
 
     img = cv2.merge((b1,g1,r1))
-    stego = img
+    stegoDCT = img
     cek = cv2.imwrite(RESULT_FOLDER + encode_folder +"/DCT-" + cover_img, img)
-    mse,psnr = go_psnr(cover,stego)
+    mse,psnr = go_psnr(cover,stegoDCT)
+    print(mse, " ", psnr)
     dataDCT = {
         'file_name':"/static/result/"+ encode_folder +"/DCT-" + cover_img,
         'method':'DCT',
@@ -312,9 +316,10 @@ def process_encode(cover_img, hidden_text):
             i = i + 8
     
     img = cv2.merge((b1,g1,r1))
-    stego = img
+    stegoDWT = img
     cek = cv2.imwrite(RESULT_FOLDER + encode_folder +"/DWT-" + cover_img, img)
-    mse,psnr = go_psnr(cover,stego)
+    mse,psnr = go_psnr(cover,stegoDWT)
+    print(mse, " ", psnr)
     dataDWT = {
         'file_name':"/static/result/"+ encode_folder +"/DWT-" + cover_img,
         'method':'DWT',
@@ -343,7 +348,7 @@ def process_encode(cover_img, hidden_text):
                 # print(px3)
                 cA, (cH, cV, cD) = dwt2(px3, 'haar')  
                 cD = np.round(cv2.dct(np.float32(cD))).astype(int)
-                # cD = np.around(cD).astype(int)
+                cD = np.around(cD).astype(int)
                 if z<len(kontainer_div3):
                     # print(z, " ", kontainer_div3[z])
                     cD = go_encodeLSB(cD,kontainer_div3[z])
@@ -365,9 +370,10 @@ def process_encode(cover_img, hidden_text):
             i = i + 8
     
     img = cv2.merge((b1,g1,r1))
-    stego = img
+    stegoALL = img
     cek = cv2.imwrite(RESULT_FOLDER + encode_folder +"/ALL-" + cover_img, img)
-    mse,psnr = go_psnr(cover,stego)
+    mse,psnr = go_psnr(cover,stegoALL)
+    print(mse, " ", psnr)
     dataALL = {
         'file_name':"/static/result/"+ encode_folder +"/ALL-" + cover_img,
         'method':'ALL',

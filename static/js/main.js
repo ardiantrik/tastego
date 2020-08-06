@@ -43,10 +43,10 @@ function validateImageSize(){
 				img2.onload = () => {
 					img2D = img2.height*img2.width;
 					lenb = base64_2.length;
-					console.log(img1D/32);
+					console.log((img1D/32)*3);
 					console.log(lenb);
 					// why 32? 1 gambar bagi 8x8 , trus bagi meneh 4 bagian DWT
-					if (parseInt(img1D/24)<=lenb) {
+					if (parseInt((img1D/32)*3)<=lenb) {
 						document.getElementById("encode_gambar").value = 'Ukuran Melebihi Cover!';
 						document.getElementById("encode_gambar").disabled = true;
 					}else{
@@ -115,6 +115,7 @@ $(document).ready(function(){
 		//KANGGO MODAL DECODE
 		var fd = new FormData();
 		var files = $('#image-up')[0].files[0];
+		console.log(files);
 		fd.append('file',files);
 		fd.append('method',metode);
 		

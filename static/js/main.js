@@ -35,10 +35,14 @@ function validateImageSize(){
 	var img1 = new Image();
 	
 	if ($('#image-up').prop('files')[0]) {
+		var img1size = $('#image-up').prop('files')[0].size;
+		document.getElementById("sizeOri").innerHTML = "Ukuran File Cover : "+ parseInt(img1size/1000) +" KB";
 		img1.src = window.URL.createObjectURL($('#image-up')[0].files[0])
 		img1.onload = () => {
 			img1D = img1.height*img1.width;
 			if ($('#hiding-up').prop('files')[0]) {
+				var img2size = $('#hiding-up').prop('files')[0].size;
+				document.getElementById("sizeHidden").innerHTML = "Ukuran File Hidden : "+ parseInt(img2size/1000) +" KB";
 				img2.src = window.URL.createObjectURL($('#hiding-up')[0].files[0])
 				img2.onload = () => {
 					img2D = img2.height*img2.width;
@@ -79,6 +83,33 @@ function validateImageSize(){
 
 M.AutoInit();
 //var instance = M.FormSelect.getInstance(elem);
+function sendDecode(fd){
+	$.ajax({
+		url: '/go_decode',
+		type: 'POST',
+		data: fd,
+		contentType: false,
+		processData: false,
+		success: function(response){
+			if(response != 0){
+				console.log("success broh");
+				//console.log(response);
+				var str = String(response);
+				var cek = str.includes("data:image/png;base64,");
+				console.log(cek);
+				
+				if (cek) {
+					document.getElementById("hidden_object").innerHTML = '<img src="'+response+'" class="responsive-img" />';
+				} else {
+					document.getElementById("hidden_object").innerHTML =response;	
+				}
+				
+			}else{
+				alert('file not uploaded');
+			}
+		},
+	});
+}
 
 $(document).ready(function(){
 	
@@ -111,6 +142,7 @@ $(document).ready(function(){
 	$("#decode_object").click(function (){
 		var metode = $('#select-metode option:selected').val();
 		console.log(metode);
+		var tipeUp = "file"
 		//DO NOT DELETE
 		//KANGGO MODAL DECODE
 		var fd = new FormData();
@@ -118,32 +150,91 @@ $(document).ready(function(){
 		console.log(files);
 		fd.append('file',files);
 		fd.append('method',metode);
+		fd.append('type',tipeUp);
 		
-		$.ajax({
-            url: '/go_decode',
-            type: 'POST',
-            data: fd,
-            contentType: false,
-            processData: false,
-            success: function(response){
-                if(response != 0){
-					//console.log("success broh");
-					//console.log(response);
-					var str = String(response);
-					var cek = str.includes("data:image/png;base64,");
-					console.log(cek);
+		sendDecode(fd);
+
+		// $.ajax({
+        //     url: '/go_decode',
+        //     type: 'POST',
+        //     data: fd,
+        //     contentType: false,
+        //     processData: false,
+        //     success: function(response){
+        //         if(response != 0){
+		// 			//console.log("success broh");
+		// 			//console.log(response);
+		// 			var str = String(response);
+		// 			var cek = str.includes("data:image/png;base64,");
+		// 			console.log(cek);
 					
-					if (cek) {
-						document.getElementById("hidden_object").innerHTML = '<img src="'+response+'" class="responsive-img" />';
-					} else {
-						document.getElementById("hidden_object").innerHTML =response;	
-					}
+		// 			if (cek) {
+		// 				document.getElementById("hidden_object").innerHTML = '<img src="'+response+'" class="responsive-img" />';
+		// 			} else {
+		// 				document.getElementById("hidden_object").innerHTML =response;	
+		// 			}
 					
-                }else{
-                    alert('file not uploaded');
-                }
-            },
-        });
+        //         }else{
+        //             alert('file not uploaded');
+        //         }
+        //     },
+        // });
+
+	});
+
+	$("#decodeHasilLSB").click(function (){
+		var loc = document.getElementById("fileLocationLSB").value;
+		var met = "LSB";
+		var tipeUp = "loc"
+		console.log(loc+ " "+ met);
+		var fd = new FormData();
+		fd.append('location',loc);
+		fd.append('method',met);
+		fd.append('type',tipeUp);
+
+		sendDecode(fd);
+
+	});
+
+	$("#decodeHasilDCT").click(function (){
+		var loc = document.getElementById("fileLocationDCT").value;
+		var met = "DCT";
+		var tipeUp = "loc"
+		console.log(loc+ " "+ met);
+		var fd = new FormData();
+		fd.append('location',loc);
+		fd.append('method',met);
+		fd.append('type',tipeUp);
+		
+		sendDecode(fd);
+
+	});
+
+	$("#decodeHasilDWT").click(function (){
+		var loc = document.getElementById("fileLocationDWT").value;
+		var met = "DWT";
+		var tipeUp = "loc"
+		console.log(loc+ " "+ met);
+		var fd = new FormData();
+		fd.append('location',loc);
+		fd.append('method',met);
+		fd.append('type',tipeUp);
+		
+		sendDecode(fd);
+
+	});
+
+	$("#decodeHasilALL").click(function (){
+		var loc = document.getElementById("fileLocationALL").value;
+		var met = "ALL";
+		var tipeUp = "loc"
+		console.log(loc+ " "+ met);
+		var fd = new FormData();
+		fd.append('location',loc);
+		fd.append('method',met);
+		fd.append('type',tipeUp);
+		
+		sendDecode(fd);
 
 	});
 

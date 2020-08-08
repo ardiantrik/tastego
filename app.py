@@ -3,7 +3,7 @@ import base64
 import cv2
 import numpy as np
 import PIL  
-from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory, jsonify, send_file
 from PIL import Image
 from io import BytesIO
 from werkzeug.utils import secure_filename
@@ -13,8 +13,8 @@ from datetime import datetime
 from pywt import dwt2, idwt2
 import math
 
-encode_folder = "Encoded_image_" + str(datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
-decode_folder= "Decoded_image_" + str(datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
+encode_folder = "Encoded_image_" + str(datetime.now().strftime("%Y-%m-%d_%H-%M"))
+decode_folder= "Decoded_image_" + str(datetime.now().strftime("%Y-%m-%d_%H-%M"))
 UPLOAD_FOLDER = os.getcwd() + '/assets/'
 RESULT_FOLDER = os.getcwd() + '/static/result/'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg','bmp'}
@@ -216,7 +216,8 @@ def process_encode(cover_img, hidden_text):
     mse,psnr = go_psnr(cover,stegoLSB)
     print(mse, " ", psnr)
     dataLSB = {
-        'file_name':"/static/result/"+ encode_folder +"/LSB-" + cover_img,
+        'file_name':"LSB-"+cover_img,
+        'file_loc':"/static/result/"+ encode_folder +"/LSB-" + cover_img,
         'method':'LSB',
         'mse':mse,
         'psnr':psnr
@@ -269,7 +270,8 @@ def process_encode(cover_img, hidden_text):
     mse,psnr = go_psnr(cover,stegoDCT)
     print(mse, " ", psnr)
     dataDCT = {
-        'file_name':"/static/result/"+ encode_folder +"/DCT-" + cover_img,
+        'file_name':"DCT-"+cover_img,
+        'file_loc':"/static/result/"+ encode_folder +"/DCT-" + cover_img,
         'method':'DCT',
         'mse':mse,
         'psnr':psnr
@@ -321,7 +323,8 @@ def process_encode(cover_img, hidden_text):
     mse,psnr = go_psnr(cover,stegoDWT)
     print(mse, " ", psnr)
     dataDWT = {
-        'file_name':"/static/result/"+ encode_folder +"/DWT-" + cover_img,
+        'file_name':"DWT-"+cover_img,
+        'file_loc':"/static/result/"+ encode_folder +"/DWT-" + cover_img,
         'method':'DWT',
         'mse':mse,
         'psnr':psnr
@@ -375,7 +378,8 @@ def process_encode(cover_img, hidden_text):
     mse,psnr = go_psnr(cover,stegoALL)
     print(mse, " ", psnr)
     dataALL = {
-        'file_name':"/static/result/"+ encode_folder +"/ALL-" + cover_img,
+        'file_name':"ALL-"+cover_img,
+        'file_loc':"/static/result/"+ encode_folder +"/ALL-" + cover_img,
         'method':'ALL',
         'mse':mse,
         'psnr':psnr
@@ -490,11 +494,14 @@ def go_decodeAlt(r1,g1,b1):
     decodeAlt_result = kontainer
     return decodeAlt_result
     
-def process_decode(stego_img,stego_method):
+def process_decode(stego_img,stego_method,mode):
     #LSB
     # ======Iki kendalane ana nang pembatas=======
     # hidden_obj= lsb.reveal(UPLOAD_FOLDER + "/" +stego_img)
-    stegoImage = cv2.imread(UPLOAD_FOLDER + "/" + stego_img,1)
+    if mode == 1:
+        stegoImage = cv2.imread(UPLOAD_FOLDER + "/" + stego_img,1)
+    else:
+        stegoImage = cv2.imread(os.getcwd() + stego_img,1)
     stegoImage = cv2.cvtColor(stegoImage, cv2.COLOR_BGR2RGB)
     
     
@@ -713,12 +720,25 @@ def go_encode():
 
 @app.route('/go_decode', methods=['GET', 'POST'])
 def go_decode():
-    if request.method == 'POST':
+    # print(request.files)
+    if request.method == 'POST' and request.form['type'] == 'loc':
+        print("mlebu sek location")
+        stego_loc = request.form['location']
+        print(stego_loc)
+        stego_method = request.form['method']
+        # new_stego_img = go_upload(stego_img)
+        hidden_object = process_decode(stego_loc,stego_method,2) 
+        if hidden_object != '':
+            return hidden_object
+        else:
+            return "Tidak Ditemukan"
+    elif request.method == 'POST' and request.form['type'] == 'file':
+        print("mlebu sek file")
         stego_img = request.files['file']
         stego_method = request.form['method']
         print(stego_method)
         new_stego_img = go_upload(stego_img)
-        hidden_object = process_decode(new_stego_img,stego_method) 
+        hidden_object = process_decode(new_stego_img,stego_method,1) 
 
         if hidden_object != '':
             return hidden_object
@@ -731,6 +751,11 @@ def go_decode():
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'],
                                filename)
+
+@app.route('/return-files/<filename>')
+def return_files_tut(filename):
+    file_path = RESULT_FOLDER + encode_folder+ "/" + filename
+    return send_file(file_path, as_attachment=True, attachment_filename='')
 
 @app.route('/test')
 def testing_page():

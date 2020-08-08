@@ -7,7 +7,6 @@
 {% block body %}
 <div class="row">
   <div class="row">
-    <!-- <select hidden id="select-metode"> -->
     {% for result in result %}
     <div class="col s12 m6">
       <div class="card large">
@@ -15,13 +14,14 @@
           <span class="card-title">{{ result.method }}</span>
           MSE: {{ result.mse }} <br>
           PSNR: {{ result.psnr }} 
-          <img src="{{ result.file_name }}" class="responsive-img" style="max-height: 350px;">
+          <img src="{{ result.file_loc }}" class="responsive-img" style="max-height: 350px;">
         </div>
         <!-- <option hidden value="{{ result.method }}"></option> -->
         <div class="card-action">
+          <input type="hidden" value="{{ result.file_loc }}" name="fileLoc" id="fileLocation{{ result.method }}">
           <!-- <a href="#" class="btn blue darken-3">ENCODE</a> -->
-          <a class="waves-effect waves-light btn modal-trigger blue darken-3" href="#modal1" id="decode_object">DECODE</a>
-          <a href="#" class="btn blue darken-3">DOWNLOAD</a>
+          <a class="waves-effect waves-light btn modal-trigger blue darken-3" href="#modal1" id="decodeHasil{{ result.method }}">DECODE</a>
+          <a href="/return-files/{{ result.file_name }}" class="btn blue darken-3">DOWNLOAD</a>
         </div>
       </div>
     </div>
@@ -69,7 +69,7 @@
       </div>
       
     </div> -->
-    <!-- Modal Structure
+    Modal Structure
     <div id="modal1" class="modal">
       <div class="modal-content">
         <h4>Hasil Decode</h4>
@@ -78,7 +78,7 @@
       <div class="modal-footer">
         <a href="#!" class="modal-close waves-effect waves-green btn-flat">Tutup</a>
       </div>
-    </div> -->
+    </div>
 
   </div> 
 </div>

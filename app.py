@@ -17,7 +17,7 @@ encode_folder = "Encoded_image_" + str(datetime.now().strftime("%Y-%m-%d_%H-%M")
 decode_folder= "Decoded_image_" + str(datetime.now().strftime("%Y-%m-%d_%H-%M"))
 UPLOAD_FOLDER = os.getcwd() + '/assets/'
 RESULT_FOLDER = os.getcwd() + '/static/result/'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg','bmp'}
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg','bmp', 'tif'}
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -36,16 +36,22 @@ def go_upload(file_up):
     return filename
 
 def go_psnr(cover_img,stego_img):
-    mse = np.mean((cover_img - stego_img) ** 2 )
-    # mse = np.sum((cover_img - stego_img) ** 2 )
-    # mse /= float(cover_img.shape[0] * cover_img.shape[1]);
-    # print("MSE : " + str(mse))
+    dimensiCover = np.shape(cover_img)
+    dimensiStego = np.shape(stego_img)
+    print(dimensiCover[0]*dimensiCover[1])
+    # [0] = height, [1] = width, [2] = color channel
+    if (dimensiCover[0]*dimensiCover[1]) != (dimensiStego[0]*dimensiStego[1]):
+        mse = (dimensiCover[0]*dimensiCover[1])-(dimensiStego[0]*dimensiStego[1])
+        # psnr = "Beda Dimensi"
+    else:
+        mse = np.mean((cover_img - stego_img) ** 2 )
+        
     if mse == 0:
         psnr = 100
     else:
         PIXEL_MAX = 255.0
         psnr = 20 * math.log10(PIXEL_MAX / math.sqrt(mse))
-
+    
     return mse,psnr
 
 def go_encodeLSB(px,kontainer):
@@ -70,66 +76,34 @@ def go_encodeLSB(px,kontainer):
     # print(px)
     return px
 
-def go_encodeAlt(r1,g1,b1,kontainer):
+def go_encodeAlt(px,kontainer):
     hit_kontainer = len(kontainer)
-    height,width = np.shape(r1)
+    height,width = np.shape(px)
     index = 0
-    status_rgb = 0
-    row = 0
-    row_reset = 0
     row_stop = 0
-    # for row in range(height):
-    #     for col in range(width):
-    while row<height:
-        col = 0
-        col_reset = 0
-        while col<width:
+    for row in range(height):
+        for col in range(width):
             if index<hit_kontainer:
-                if status_rgb == 0:
-                    r1[row][col] = ord(kontainer[index])
-                elif status_rgb == 1:
-                    g1[row][col] = ord(kontainer[index])
-                elif status_rgb == 2:
-                    b1[row][col] = ord(kontainer[index])
+                px[row][col] = ord(kontainer[index])
                 index = index + 1
-                # if index>height*width and index<hit_kontainer and status == 0:
-            elif index<hit_kontainer and row == height and col == width:
-                status_rgb = status_rgb + 1
-                row_reset=1
-                col_reset=1
-                print("reset status" + str(status_rgb))
             else:
                 row_stop = 1
                 break
-            
-            if col_reset == 0:
-                col = col + 1
-                # print(col, 'iki col tambah')
-            else:
-                col = 0
-                col_reset=0
-
         if row_stop != 0:
             break
-
-        if row_reset == 0:
-            row = row + 1
-            # print(row, 'iki row tambah')
-        else:
-            row = 0
-            row_reset=0
-        
-    return r1,g1,b1
+    # print(px)
+    return px
 
 def process_encode(cover_img, hidden_text):
     global coverImage, r1, g1, b1, r2, b2, g2
 
     coverImage = cv2.imread(UPLOAD_FOLDER + "/" + cover_img,1)
-    coverImage = cv2.cvtColor(coverImage, cv2.COLOR_BGR2RGB)
     cover = coverImage
+    coverImage = cv2.cvtColor(coverImage, cv2.COLOR_BGR2RGB)
+    # cover = coverImage
     hid = hidden_text+'~@&'
     hit_hidden = len(hid)
-    print(hit_hidden)
+    print(hid)
     kontainer = ''
     kontainer2 = ''
     kontainer3 = ''
@@ -143,6 +117,7 @@ def process_encode(cover_img, hidden_text):
         # print(i, " " , hid[i])
         kontainer = kontainer + f'{ord(hid[i]):08b}'
         kontainer2 = kontainer2 + f'{ord(hid[i]):08b}'
+        # kontainer2 = kontainer2 + hid[i]
         kontainer3 = kontainer3 + f'{ord(hid[i]):08b}'
         if (i+1)%8 == 0:
             if x == 0:
@@ -151,6 +126,15 @@ def process_encode(cover_img, hidden_text):
                 kontainer_div2.append(kontainer2)
             kontainer2 = ''
             x = x + 1
+        
+        # # NGGO DCT ALT ENCODE
+        # if (i+1)%64 == 0:
+        #     if x == 0:
+        #         kontainer_div2[x] = kontainer2
+        #     else:
+        #         kontainer_div2.append(kontainer2)
+        #     kontainer2 = ''
+        #     x = x + 1
 
         if (i+1)%2 == 0:
             if y == 0:
@@ -160,11 +144,13 @@ def process_encode(cover_img, hidden_text):
             kontainer3 = ''
             y = y + 1
     # print(kontainer2)
-    if kontainer2 != '':
+    if kontainer2 != '' and kontainer_div2 == [['']]:
+        kontainer_div2[0] = kontainer2
+    elif kontainer2!= '':
         kontainer_div2.append(kontainer2)
     if kontainer3 != '':
         kontainer_div3.append(kontainer3)
-    # print(kontainer_div)
+    print(kontainer_div2)
     # print(len(kontainer_div2))
 
     # print(kontainer_div)
@@ -176,15 +162,32 @@ def process_encode(cover_img, hidden_text):
     r1, g1, b1 = cv2.split(coverImage)
     p,l = np.shape(r1)
     x = 0
+    kont = ''
     if len(kontainer)>(p*l):
         for i in range(len(kontainer)):
-            if i == 0:
-                kontainer_div[x] = kontainer[i]
-            elif i == (p*l):
-                kontainer_div[x] = kontainer[i]
+            kont = kont + kontainer[i]
+            if (i+1)%(p*l) == 0:
+                if x == 0:
+                    kontainer_div[x] = kont
+                else:
+                    kontainer_div.append(kont)
+                kont = ''
                 x = x + 1
-            else:
-                kontainer_div[x] = kontainer_div[x] + kontainer[i]
+                print(x)
+        
+        if kont != '':
+            kontainer_div.append(kont)
+        # print(kontainer_div)
+            # if i == 0:
+            #     kontainer_div[x] = kontainer[i]
+            # elif i == (p*l):
+            #     kontainer_div[x] = kontainer[i]
+            #     x = x + 1
+            #     print("here")
+            # else:
+            #     kontainer_div[x] = kontainer_div[x] + kontainer[i]
+            #     # kontainer_div.append(kontainer)
+            #     # print(kontainer_div)
     else:
         kontainer_div[x] = kontainer
     # print(kontainer_div)
@@ -243,13 +246,18 @@ def process_encode(cover_img, hidden_text):
             while j<(int(y/8))*8:
                 px2 = px1[i:i+8,j:j+8]
 
-                px2 = np.round(cv2.dct(np.float32(px2))).astype(int)
+                # px2 = np.uint8(cv2.dct(np.float32(px2)))
+                px2 = np.around(cv2.dct(np.float32(px2))).astype(int)
 
                 if z<len(kontainer_div2):
                     # print(z, " ", kontainer_div2[z])
                     px2 = go_encodeLSB(px2,kontainer_div2[z])
+                    # print(kontainer_div2[z])
+                    # px2 = go_encodeAlt(px2,kontainer_div2[z])
+                    
 
-                    # px2 = np.round(cv2.idct(np.float32(px2))).astype(int)
+                    # px2 = np.uint8(cv2.idct(np.float32(px2)))
+                    # px2 = np.around(cv2.idct(np.float32(px2))).astype(int)
 
                     if rgb== 0:
                         r1[i:i+8,j:j+8] = px2
@@ -297,10 +305,10 @@ def process_encode(cover_img, hidden_text):
                 px3 = px1[i:i+8,j:j+8]
                 # print(px3)
                 cA, (cH, cV, cD) = dwt2(px3, 'haar')  
-                cD = np.around(cD).astype(int)
+                cH = np.around(cH).astype(int)
                 if z<len(kontainer_div3):
                     # print(z, " ", kontainer_div3[z])
-                    cD = go_encodeLSB(cD,kontainer_div3[z])
+                    cH = go_encodeLSB(cH,kontainer_div3[z])
                     px3 = cA.astype(int),(cH.astype(int), cV.astype(int), cD.astype(int))
                     px3 = idwt2(px3, 'haar')
                     if rgb== 0:
@@ -422,77 +430,35 @@ def go_decodeLSB(px):
     decodeLSB_result = stop_kontainer
     return decodeLSB_result
 
-def go_decodeAlt(r1,g1,b1):
-    height,width = np.shape(r1)
+def go_decodeAlt(px):
     kontainer = ''
-    # x = 1
-    index = 0
-    status_rgb = 0
-    stop_check = ''
     stop_kontainer = ''
-    stop_status = 0
-    row = 0
-    row_reset = 0
+    height,width = np.shape(px)
+    index = 0
     row_stop = 0
-    while row<height:
-        col = 0
-        col_reset = 0
-        while col<width:
-            if stop_status == 0 and status_rgb < 3:
-                if status_rgb == 0:
-                    kontainer = kontainer + str(r1[row][col])
-                    stop_check = stop_check + str(r1[row][col])
-                elif status_rgb == 1:
-                    kontainer = kontainer + str(g1[row][col])
-                    stop_check = stop_check + str(g1[row][col])
-                elif status_rgb == 2:
-                    kontainer = kontainer + str(b1[row][col])
-                    stop_check = stop_check + str(b1[row][col])
+    stop_status = 0
+    for row in range(height):
+        for col in range(width):
+            if stop_status == 0:
+                kontainer = kontainer + str(px[row][col])
                 index = index + 1
-
-                # print(stop_check)
-                stop_kontainer = stop_kontainer + chr(abs(int(stop_check)))
+                print(row," ",col," ", chr(abs(int(kontainer))))
+                stop_kontainer = stop_kontainer + chr(abs(int(kontainer)))
                 if '~@&' in stop_kontainer:
                     stop_status = 999
+                    row_stop = 1
                     print("STOP skuy")
                     break
                 else:
-                    stop_check = ''
-                # x = x + 1
-            elif row == height and col == width:
-                status_rgb = status_rgb + 1
-                row_reset=1
-                col_reset=1
-                print("reset status" + str(status_rgb))
+                    kontainer = ''
             else:
                 row_stop = 1
-                print(row, " dan ", col, "STOP KABEH")
                 break
-
-            if col_reset == 0:
-                col = col + 1
-            else:
-                col = 0
-                col_reset=0
-
         if row_stop != 0:
             break
-
-        if row_reset == 0:
-            row = row + 1
-        else:
-            row = 0
-            row_reset=0
-
-    kontainer = stop_kontainer
-    if height !=8 and width !=8:
-        for i in range(len(kontainer)):
-            if kontainer[i] == '~' and kontainer[i+1] == '@' and kontainer[i+2] == '&':
-                kontainer = kontainer[0:i]
-                break
-    
-    decodeAlt_result = kontainer
-    return decodeAlt_result
+    # print(px)
+    decodeLSB_result = stop_kontainer
+    return decodeLSB_result
     
 def process_decode(stego_img,stego_method,mode):
     #LSB
@@ -548,9 +514,11 @@ def process_decode(stego_img,stego_method,mode):
                 j=0
                 while j<(int(y/8))*8:
                     px2 = px1[i:i+8,j:j+8]
-                    # px2 = np.round(cv2.dct(np.float32(px2))).astype(int)  
+                    # px2 = np.uint8(cv2.dct(np.float32(px2)))
+                    # px2 = np.around(cv2.dct(np.float32(px2))).astype(int)  
                     if '~@&' not in kontainer:
                             kontainer = kontainer + go_decodeLSB(px2)
+                            # kontainer = kontainer + go_decodeAlt(px2)
                             # print(kontainer)
                             z = z + 1
                     else:
@@ -592,9 +560,9 @@ def process_decode(stego_img,stego_method,mode):
                 while j<(int(y/8))*8:
                     px3 = px1[i:i+8,j:j+8]
                     cA, (cH, cV, cD) = dwt2(px3, 'haar')   
-                    cD = np.around(cD).astype(int)
+                    cH = np.around(cH).astype(int)
                     if '~@&' not in kontainer:
-                            kontainer = kontainer + go_decodeLSB(cD)
+                            kontainer = kontainer + go_decodeLSB(cH)
                             # print(kontainer)
                             z = z + 1
                     else:
@@ -717,6 +685,25 @@ def go_encode():
             return render_template('hal_error.html')
     else:
         return render_template('hal_error.html')
+
+@app.route('/go_hitpsnr', methods=['GET', 'POST'])
+def go_hitpsnr():
+    if request.method == 'POST':
+        stego_img1 = request.files['file1']
+        stego_img2 = request.files['file2']
+        new_stego_img1 = go_upload(stego_img1)
+        new_stego_img2 = go_upload(stego_img2)
+        upStego1 = cv2.imread(UPLOAD_FOLDER + "/" + new_stego_img1,1)
+        upStego2 = cv2.imread(UPLOAD_FOLDER + "/" + new_stego_img2,1)
+        mse,psnr = go_psnr(upStego1,upStego2)
+        if psnr != '':
+            dataPSNR = {
+                'mse':mse,
+                'psnr':psnr
+            }
+            return dataPSNR
+        else:
+            return "Tidak Dihitung"
 
 @app.route('/go_decode', methods=['GET', 'POST'])
 def go_decode():

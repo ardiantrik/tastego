@@ -1,5 +1,5 @@
 var base64, base64_2;
-var img1D, img2D, lenb;
+var img1D, img2D, lenb, resp;
 
 function original() {
 	$('#progress').show();
@@ -40,6 +40,8 @@ function validateImageSize(){
 		img1.src = window.URL.createObjectURL($('#image-up')[0].files[0])
 		img1.onload = () => {
 			img1D = img1.height*img1.width;
+			document.getElementById("pxOri").innerHTML = "Dimensi Cover : " + parseInt(img1.height) + "px X " + parseInt(img1.width) + "px";
+			document.getElementById("kapOri").innerHTML = "Kapasistas Cover : " + parseInt((img1D/32)*3);
 			if ($('#hiding-up').prop('files')[0]) {
 				var img2size = $('#hiding-up').prop('files')[0].size;
 				document.getElementById("sizeHidden").innerHTML = "Ukuran File Hidden : "+ parseInt(img2size/1000) +" KB";
@@ -47,6 +49,7 @@ function validateImageSize(){
 				img2.onload = () => {
 					img2D = img2.height*img2.width;
 					lenb = base64_2.length;
+					document.getElementById("kapHidden").innerHTML = "Kapasistas Hidden : " + parseInt(lenb);
 					console.log((img1D/32)*3);
 					console.log(lenb);
 					// why 32? 1 gambar bagi 8x8 , trus bagi meneh 4 bagian DWT
@@ -83,7 +86,38 @@ function validateImageSize(){
 
 M.AutoInit();
 //var instance = M.FormSelect.getInstance(elem);
-function sendDecode(fd){
+function sendPSNR(fd){
+	$.ajax({
+		url: '/go_hitpsnr',
+		type: 'POST',
+		data: fd,
+		contentType: false,
+		processData: false,
+		success: function(response){
+			if(response != 0){
+				console.log("success PSNR");
+				console.log(response);
+				document.getElementById("idnPSNR").innerHTML = "PSNR : " + response.psnr;
+				document.getElementById("idnMSE").innerHTML =  "MSE  : " + response.mse;
+				// var str = String(response);
+				// var cek = str.includes("data:image/png;base64,");
+				// console.log(cek);
+				
+				// if (cek) {
+				// 	document.getElementById("hidden_object").innerHTML = '<img src="'+response+'" class="responsive-img" />';
+				// } else {
+				// 	document.getElementById("hidden_object").innerHTML =response;	
+				// }
+				
+			}else{
+				alert('file not uploaded');
+			}
+		},
+	});
+}
+
+function sendDecode(fd, komponenId){
+	
 	$.ajax({
 		url: '/go_decode',
 		type: 'POST',
@@ -93,15 +127,18 @@ function sendDecode(fd){
 		success: function(response){
 			if(response != 0){
 				console.log("success broh");
-				//console.log(response);
+				// console.log(response);
 				var str = String(response);
 				var cek = str.includes("data:image/png;base64,");
 				console.log(cek);
 				
 				if (cek) {
-					document.getElementById("hidden_object").innerHTML = '<img src="'+response+'" class="responsive-img" />';
+					// return '<img src="'+response+'" class="responsive-img" />';
+					document.getElementById(komponenId).innerHTML = '<img src="'+response+'" class="responsive-img" />';
 				} else {
-					document.getElementById("hidden_object").innerHTML =response;	
+					console.log(response);
+					// return response;
+					document.getElementById(komponenId).innerHTML =response;	
 				}
 				
 			}else{
@@ -119,10 +156,10 @@ $(document).ready(function(){
 			img1.src = window.URL.createObjectURL($('#image-up')[0].files[0])
 			img1.onload = () => {
 				img1D = img1.height*img1.width;
-				document.getElementById("textarea2").setAttribute("data-length", parseInt(img1D/24));
+				document.getElementById("textarea2").setAttribute("data-length", parseInt((img1D/32)*3));
 				let string = $(this).val();
 				let totString = string.length;
-				if (totString>(img1D/32)) {
+				if (totString>((img1D/32)*3)) {
 					document.getElementById("encode_text").value = 'Teks Melebihi Batas!';
 					document.getElementById("encode_text").disabled = true;
 				}else{
@@ -152,7 +189,7 @@ $(document).ready(function(){
 		fd.append('method',metode);
 		fd.append('type',tipeUp);
 		
-		sendDecode(fd);
+		sendDecode(fd,"hidden_object");
 
 		// $.ajax({
         //     url: '/go_decode',
@@ -192,7 +229,7 @@ $(document).ready(function(){
 		fd.append('method',met);
 		fd.append('type',tipeUp);
 
-		sendDecode(fd);
+		sendDecode(fd,"hidden_object");
 
 	});
 
@@ -206,7 +243,7 @@ $(document).ready(function(){
 		fd.append('method',met);
 		fd.append('type',tipeUp);
 		
-		sendDecode(fd);
+		sendDecode(fd,"hidden_object");
 
 	});
 
@@ -220,7 +257,7 @@ $(document).ready(function(){
 		fd.append('method',met);
 		fd.append('type',tipeUp);
 		
-		sendDecode(fd);
+		sendDecode(fd,"hidden_object");
 
 	});
 
@@ -234,7 +271,53 @@ $(document).ready(function(){
 		fd.append('method',met);
 		fd.append('type',tipeUp);
 		
-		sendDecode(fd);
+		sendDecode(fd,"hidden_object");
+
+	});
+
+	$("#identifyHasil").click(function (){
+		if ($('#image-up1').prop('files')[0]) {
+			var reader = new FileReader();
+			reader.onload = function (e) {
+				base64 = e.target.result;
+				$('#stegImage1').attr('src', base64);
+			};
+			reader.readAsDataURL($('#image-up1').prop('files')[0]);
+		}
+
+		if ($('#image-up2').prop('files')[0]) {
+			var reader = new FileReader();
+			reader.onload = function (e) {
+				base64_2 = e.target.result;
+				$('#stegImage2').attr('src', base64_2);
+			};
+			reader.readAsDataURL($('#image-up2').prop('files')[0]);
+		}
+
+		var metode = $('#select-metode option:selected').val();
+		console.log(metode);
+		var tipeUp = "file"
+		//DO NOT DELETE
+		//KANGGO MODAL DECODE
+		var fd1 = new FormData();
+		var fd2 = new FormData();
+		var fd_psnr = new FormData();
+		var files1 = $('#image-up1')[0].files[0];
+		var files2 = $('#image-up2')[0].files[0];
+		// console.log(files);
+		fd_psnr.append('file1',files1);
+		fd_psnr.append('file2',files2);
+		sendPSNR(fd_psnr);
+
+		fd1.append('file',files1);
+		fd1.append('method',metode);
+		fd1.append('type',tipeUp);
+
+		fd2.append('file',files2);
+		fd2.append('method',metode);
+		fd2.append('type',tipeUp);
+		sendDecode(fd1, "hidObject1");
+		sendDecode(fd2, "hidObject2");
 
 	});
 

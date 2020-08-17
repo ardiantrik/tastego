@@ -1,13 +1,13 @@
 import numpy as np
-# n = -6.5
+n = -6.5
 # # # print(chr(np.around(108.5).astype(int)))
 # print(f'{np.around(n).astype(int):08b}')
 # print(int(f'{np.around(n).astype(int):08b}',2))
-print(np.round(17.5).astype(int))
+# print(np.round(17.5).astype(int))
 # print(ord("Õ"))
 
-# print(chr(int('00100110',2)))
-# print(chr(int('01000000',2)))
+print(chr(int('00100110',2)))
+print(chr(int('01000000',2)))
 # for x in range((int(500/8))*8):
 #   print(x) 
 # i=0

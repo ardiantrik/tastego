@@ -5,13 +5,15 @@
 {% endblock %}
 
 {% block body %}
+<div style="float: left;"><a href="/">Home</a></div>
+<form action="/go_decode" method="POST" enctype=multipart/form-data>
 <div class="row center-align">
     <div class="col l3"></div>
     <div class="col s12 l6">
       <div class="file-field input-field">
         <div class="btn blue darken-3">
           <span>Pilih Gambar</span>
-          <input type="file" id="image-up" name="image" accept="image/*" onchange="original()">
+          <input type="file" id="image-up1" name="image" accept="image/*">
         </div>
         <div class="file-path-wrapper">
           <input class="file-path validate" type="text" placeholder="Pilih Citra 1">
@@ -21,7 +23,7 @@
       <div class="file-field input-field">
         <div class="btn blue darken-3">
           <span>Pilih Gambar</span>
-          <input type="file" id="image-up" name="image" accept="image/*" onchange="original()">
+          <input type="file" id="image-up2" name="image" accept="image/*">
         </div>
         <div class="file-path-wrapper">
           <input class="file-path validate" type="text" placeholder="Pilih CItra 2">
@@ -30,10 +32,30 @@
     </div> 
   </div>
 
+  <div class="row center-align">
+    <div class="col l3"></div>
+    <div class="input-field col center-align s12 l6">
+      <select id="select-metode">
+        <optgroup label="Ranah Spatial">
+          <option value="LSB">Least Significant Bit</option>
+        </optgroup>
+        <optgroup label="Ranah Frekuensi">
+          <option value="DCT">Discrete Cosine Transform</option>
+          <option value="DWT">Discrete Haar Wavelete Transform</option>
+        </optgroup>
+        <optgroup label="Kombinasi">
+          <option value="ALL">Kombinasi LSB+DCT+DWT</option>
+        </optgroup>
+      </select>
+      <label>Metode Ekstraksi</label>
+        
+    </div>
+  </div>  
+
   <div class="row">
     <div class="col l2"></div>
     <div class="col s12 l8">
-      <a href="#" class="btn blue darken-3">Identifikasi</a>
+      <a href="#" class="btn blue darken-3" id="identifyHasil">Identifikasi</a>
       <!-- <div class="card">
         <div class="card-content">
           <span class="card-title">Hidden Object</span>
@@ -69,11 +91,12 @@
       </div> -->
     </div>
   </div>
+</form>
   <div class="row">
     <div class="col 13">
       <div style="float: left; text-align: left;">
-        PSNR : 100 <br>
-        MSE  : 3
+        <p id="idnPSNR">PSNR : 0</p>
+        <p id="idnMSE">MSE  : 0</p>
       </div>
     </div>
     <div class="col s12 l12">
@@ -86,13 +109,15 @@
           <tbody>
             <tr>
               <th>Citra</th>
-              <td>Gambar 1</td>
-              <td>Gambar 2</td>
+              <td><img id="stegImage1" class="responsive-img" width="300px"></td>
+              <td><img id="stegImage2" class="responsive-img" width="300px"></td>
             </tr>
             <tr>
               <th>Hasil <br> Decode</th>
-              <td>opo ngono</td>
-              <td>opo ngono2</td>
+              <div>
+                <td><p id="hidObject1" style="width: 200px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">plain text po hidden image 1</p></td>
+                <td><p id="hidObject2" style="width: 500px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">plain text po hidden image 2</p></td>
+              </div>
             </tr>
           </tbody>
         </table>

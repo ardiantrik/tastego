@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block body %}
+<div style="float: left;"><a href="/">Home</a></div>
 <form action="/go_encode" method="POST" enctype=multipart/form-data>
 <div class="row center-align">
   <div class="col l3"></div>
@@ -27,6 +28,9 @@
         <h4>Original Image</h4>
         <img id="ori-image" class="responsive-img">
         <p id="sizeOri">Ukuran File : KB</p>
+        <p id="pxOri">Dimensi : x</p>
+        <p id="kapOri">Kapasitas : </p>
+
     </div>
 </div>
 
@@ -64,7 +68,8 @@
             </div>
           </div>
           <img id="hid-image" class="responsive-img" width="50%"><br>
-          <p id="sizeHidden">Ukuran File : KB</p><br>
+          <p id="sizeHidden">Ukuran File : KB</p>
+          <p id="kapHidden">Kapasitas : </p>
           <input type="submit" value="Encode Gambar" name="action" class="btn blue darken-3" id="encode_gambar">
           <!--a href="/encode_gambar" >Encode Gambar</a-->
         </div>

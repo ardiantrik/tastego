@@ -12,6 +12,7 @@ from datetime import datetime
 # from scipy.fftpack import dct, idct
 from pywt import dwt2, idwt2
 import math
+import random
 
 encode_folder = "Encoded_image_" + str(datetime.now().strftime("%Y-%m-%d_%H-%M"))
 decode_folder= "Decoded_image_" + str(datetime.now().strftime("%Y-%m-%d_%H-%M"))
@@ -28,12 +29,13 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def go_upload(file_up):
+def go_upload(file_up,id):
     if file_up and allowed_file(file_up.filename):
         filename = secure_filename(file_up.filename)
-        file_up.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        fixname = str(id) + filename
+        file_up.save(os.path.join(app.config['UPLOAD_FOLDER'], fixname))
     
-    return filename
+    return fixname
 
 def go_psnr(cover_img,stego_img):
     dimensiCover = np.shape(cover_img)
@@ -656,7 +658,7 @@ def go_encode():
     if request.method == 'POST' and 'ori_image' in request.files:
         cover_img = request.files['ori_image']
         if request.form['action'] == 'Encode Pesan' and request.form['hidden_text'] != '' and cover_img.filename != '':
-            new_cover_img = go_upload(cover_img)
+            new_cover_img = go_upload(cover_img,'')
             hidden_text = request.form['hidden_text']
             result_data = process_encode(new_cover_img,hidden_text)
             if result_data != '': 
@@ -666,8 +668,8 @@ def go_encode():
             
         elif request.form['action'] == 'Encode Gambar' and 'hidden_image' in request.files and cover_img.filename != '':
             hidden_img = request.files['hidden_image']
-            new_cover_img = go_upload(cover_img)
-            new_hidden_img = go_upload(hidden_img)
+            new_cover_img = go_upload(cover_img,'')
+            new_hidden_img = go_upload(hidden_img,'')
             #img = Image.open(UPLOAD_FOLDER+"/"+hidden_img.filename)
             #proses read dari file
             f = open(UPLOAD_FOLDER+"/"+new_hidden_img, 'rb')
@@ -691,8 +693,8 @@ def go_hitpsnr():
     if request.method == 'POST':
         stego_img1 = request.files['file1']
         stego_img2 = request.files['file2']
-        new_stego_img1 = go_upload(stego_img1)
-        new_stego_img2 = go_upload(stego_img2)
+        new_stego_img1 = go_upload(stego_img1,1)
+        new_stego_img2 = go_upload(stego_img2,2)
         upStego1 = cv2.imread(UPLOAD_FOLDER + "/" + new_stego_img1,1)
         upStego2 = cv2.imread(UPLOAD_FOLDER + "/" + new_stego_img2,1)
         mse,psnr = go_psnr(upStego1,upStego2)
@@ -723,8 +725,9 @@ def go_decode():
         print("mlebu sek file")
         stego_img = request.files['file']
         stego_method = request.form['method']
-        print(stego_method)
-        new_stego_img = go_upload(stego_img)
+        print(stego_img)
+        makeID = random.randint(1,100)
+        new_stego_img = go_upload(stego_img,makeID)
         hidden_object = process_decode(new_stego_img,stego_method,1) 
 
         if hidden_object != '':

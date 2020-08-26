@@ -3,46 +3,69 @@ import numpy as np
 from scipy.fftpack import dct, idct
 from pywt import dwt2, idwt2, dwt, idwt
 
+quant = np.array([[16,11,10,16,24,40,51,61],      # QUANTIZATION TABLE
+                    [12,12,14,19,26,58,60,55],    # required for DCT
+                    [14,13,16,24,40,57,69,56],
+                    [14,17,22,29,51,87,80,62],
+                    [18,22,37,56,68,109,103,77],
+                    [24,35,55,64,81,104,113,92],
+                    [49,64,78,87,103,121,120,101],
+                    [72,92,95,98,112,100,103,99]])
+
 # cek = np.array([[154,150,169,100],
 #                 [171,136,96,141],
 #                 [146,130,95,99],
 #                 [150,99,124,109]])
 
-cek = np.array([[154,150,169,65],
-                [70,96,136,141],
-                [130,150,95,99],
-                [146,99,124,109]])
+# cek = np.array([[154,150,169,65],
+#                 [70,96,136,141],
+#                 [130,150,95,99],
+#                 [146,99,124,109]])
 
 # cek = np.array([[255,255,255,255],
 #                 [255,255,170,255],
 #                 [255,150,255,255],
 #                 [255,255,255,255]])
 
-# cek = np.array([[154,150,169,100,154,150,169,100],
-#                 [171,136,96,141,171,136,96,141],
-#                 [146,130,95,99,146,130,95,99],
-#                 [150,99,124,109,150,99,124,109],
-#                 [154,150,169,100,154,150,169,100],
-#                 [171,136,96,141,171,136,96,141],
-#                 [146,130,95,99,146,130,95,99],
-#                 [150,99,124,109,150,99,124,109]])
+cek = np.array([[154,150,169,100,154,150,169,100],
+                [171,136,96,141,171,136,96,141],
+                [146,130,95,99,146,130,95,99],
+                [150,99,124,109,150,99,124,109],
+                [154,150,169,100,154,150,169,100],
+                [171,136,96,141,171,136,96,141],
+                [146,130,95,99,146,130,95,99],
+                [150,99,124,109,150,99,124,109]])
 
 # cek = np.array([[154,150],
 #                 [171,136]])
 
-cek_dct = cv2.dct(np.float32(cek))
-# cek_dct = np.uint8(cek_dct)
-# cek_dct = np.uint8(dct(cek))
-# cek_dct = np.around(cek_dct).astype(int)
-cek_dct = np.around(cek_dct, 1)
-print(cek_dct)
-print("==================")
+# cek_dct = cv2.dct(np.float32(cek))
+# # cek_dct = np.uint8(cek_dct)
+# # cek_dct = np.uint8(dct(cek))
+# # cek_dct = np.around(cek_dct).astype(int)
+# cek_dct = np.around(cek_dct, 1)
+# cekdct = np.around(cek_dct/quant).astype(int)
+# print(cekdct)
+# # cekdct[0][2] = cekdct[0][2]+1
+# # cekdct[0][1] = cekdct[0][1]+1
+# # cekdct[0][0] = cekdct[0][0]+1
+# cekdct[0] = cekdct[0]+1
+# # cekdct[2] = cekdct[2]+1
+# # cekdct[4] = cekdct[4]+1
+# cekdct[7] = cekdct[7]+1
+# print("==================")
+# print(cekdct)
+# print("==================")
 
-cek_idct = cv2.idct(np.float32(cek_dct))
-# cek_idct = np.uint8(idct(cek_dct))
-
-print(np.around(cek_idct).astype(int))
-
+# cek_idct = cv2.idct(np.float32(cekdct*quant))
+# # cek_idct = np.uint8(idct(cek_dct))
+# cekidct = np.around(cek_idct).astype(int)
+# print(cekidct)
+# cek_dct = cv2.dct(np.float32(cekidct))
+# cek_dct = np.around(cek_dct, 1)
+# cekdct = np.around(cek_dct/quant).astype(int)
+# print(cekdct)
+# print("==================")
 
 # cA, (cH, cV, cD) = dwt2(cek, 'haar')  
 # coeffs = cA, (cH, cV, cD)
@@ -130,3 +153,11 @@ print(np.around(cek_idct).astype(int))
 #         kont2 = ''
 #     x = x+1
 # print(kontainer)
+
+mata = np.array([[1,6],
+                [4,3]])
+
+matb = np.array([[2,7],
+                 [1,4]])
+
+print(mata*matb)

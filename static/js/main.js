@@ -138,7 +138,7 @@ function sendDecode(fd, komponenId){
 				} else {
 					console.log(response);
 					// return response;
-					document.getElementById(komponenId).innerHTML =response;	
+					document.getElementById(komponenId).innerText =response;	
 				}
 				
 			}else{

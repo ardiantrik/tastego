@@ -19,6 +19,14 @@ decode_folder= "Decoded_image_" + str(datetime.now().strftime("%Y-%m-%d_%H-%M"))
 UPLOAD_FOLDER = os.getcwd() + '/assets/'
 RESULT_FOLDER = os.getcwd() + '/static/result/'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg','bmp', 'tif'}
+quant = np.array([[16,11,10,16,24,40,51,61],      # QUANTIZATION TABLE
+                    [12,12,14,19,26,58,60,55],    # required for DCT
+                    [14,13,16,24,40,57,69,56],
+                    [14,17,22,29,51,87,80,62],
+                    [18,22,37,56,68,109,103,77],
+                    [24,35,55,64,81,104,113,92],
+                    [49,64,78,87,103,121,120,101],
+                    [72,92,95,98,112,100,103,99]])
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -56,8 +64,63 @@ def go_psnr(cover_img,stego_img):
     
     return mse,psnr
 
+def newgo_encodeLSB(coverImage,kontainer):
+    r1, g1, b1 = cv2.split(coverImage)
+    print(coverImage)
+    hit_kontainer = len(kontainer)
+    height,width = np.shape(r1)
+    index = 0
+    row_stop = 0
+    col_stop = 0
+    for row in range(height):
+        for col in range(width):
+            for i in range(3):
+                if index<hit_kontainer:
+                    # print(index, " ", kontainer[index], " ",hit_kontainer)
+                    if i == 0:    
+                        rbit_temp = f'{r1[row][col]:08b}'
+                        rbit_lsb = list(rbit_temp)
+                        rbit_lsb[-1] = kontainer[index]
+                        rbit_temp = ''.join(rbit_lsb)
+                        r1[row][col] = int(rbit_temp,2)
+                    elif i == 1:
+                        gbit_temp = f'{g1[row][col]:08b}'
+                        gbit_lsb = list(gbit_temp)
+                        gbit_lsb[-1] = kontainer[index]
+                        gbit_temp = ''.join(gbit_lsb)
+                        g1[row][col] = int(gbit_temp,2)
+                    elif i == 2:
+                        bbit_temp = f'{b1[row][col]:08b}'
+                        bbit_lsb = list(bbit_temp)
+                        bbit_lsb[-1] = kontainer[index]
+                        bbit_temp = ''.join(bbit_lsb)
+                        b1[row][col] = int(bbit_temp,2)
+                    index = index + 1
+
+                # bit_temp = f'{px[row][col]:08b}'
+                # bit_lsb = list(bit_temp)
+                # bit_lsb[-1] = kontainer[index]
+                # bit_temp = ''.join(bit_lsb)
+                # px[row][col] = int(bit_temp,2)
+                else:
+                    row_stop = 1
+                    col_stop = 1
+                    break
+            if col_stop != 0:
+                break
+        if row_stop != 0:
+            break
+    # print(px)
+    img = cv2.merge((b1,g1,r1))
+    print(img)
+    return img
+
 def go_encodeLSB(px,kontainer):
     hit_kontainer = len(kontainer)
+    # if np.ndim(px) == 1:
+    #     height = 1
+    #     width = len(px)
+    # else:
     height,width = np.shape(px)
     index = 0
     row_stop = 0
@@ -105,13 +168,15 @@ def process_encode(cover_img, hidden_text):
     # cover = coverImage
     hid = hidden_text+'~@&'
     hit_hidden = len(hid)
-    print(hid)
+    # print(hid)
     kontainer = ''
     kontainer2 = ''
     kontainer3 = ''
+    kontainer4 = ''
     kontainer_div = [['']]
     kontainer_div2 = [['']]
     kontainer_div3 = [['']]
+    kontainer_div4 = [['']]
 
     x = 0
     y = 0
@@ -121,6 +186,7 @@ def process_encode(cover_img, hidden_text):
         kontainer2 = kontainer2 + f'{ord(hid[i]):08b}'
         # kontainer2 = kontainer2 + hid[i]
         kontainer3 = kontainer3 + f'{ord(hid[i]):08b}'
+        kontainer4 = kontainer4 + f'{ord(hid[i]):08b}'
         if (i+1)%8 == 0:
             if x == 0:
                 kontainer_div2[x] = kontainer2
@@ -129,6 +195,11 @@ def process_encode(cover_img, hidden_text):
             kontainer2 = ''
             x = x + 1
         
+        if i == 0:
+            kontainer_div4[0] = kontainer4
+        else:
+            kontainer_div4.append(kontainer4)
+        kontainer4 = ''
         # # NGGO DCT ALT ENCODE
         # if (i+1)%64 == 0:
         #     if x == 0:
@@ -152,7 +223,7 @@ def process_encode(cover_img, hidden_text):
         kontainer_div2.append(kontainer2)
     if kontainer3 != '':
         kontainer_div3.append(kontainer3)
-    print(kontainer_div2)
+    # print(kontainer_div4)
     # print(len(kontainer_div2))
 
     # print(kontainer_div)
@@ -216,6 +287,7 @@ def process_encode(cover_img, hidden_text):
         else:
             break
     img = cv2.merge((b1,g1,r1))
+    # img = newgo_encodeLSB(coverImage,kontainer)
     stegoLSB = img
     cek = cv2.imwrite(RESULT_FOLDER + encode_folder +"/LSB-" + cover_img, img)
     mse,psnr = go_psnr(cover,stegoLSB)
@@ -249,17 +321,31 @@ def process_encode(cover_img, hidden_text):
                 px2 = px1[i:i+8,j:j+8]
 
                 # px2 = np.uint8(cv2.dct(np.float32(px2)))
-                px2 = np.around(cv2.dct(np.float32(px2))).astype(int)
-
-                if z<len(kontainer_div2):
+                if z<len(kontainer_div4):
+                    px2 = np.around(cv2.dct(np.float32(px2)), 1)
+                    px2 = np.around(px2/quant).astype(int)
+                    #LF newpx = [px2[0][0],px2[0][1],px2[1][0],px2[2][0],px2[1][1],px2[0][2],px2[0][3],px2[1][2]]
+                    newpx = [px2[0][3],px2[1][2],px2[2][1],px2[3][0],px2[4][0],px2[3][1],px2[2][2],px2[1][3]]
+                    #HF newpx = [px2[7][7],px2[7][6],px2[6][7],px2[5][7],px2[6][6],px2[7][5],px2[6][5],px2[5][6]]
+                    testpx = np.vstack((newpx,px2[1]))
+                    # testpx = np.vstack((px2[0],px2[1]))
                     # print(z, " ", kontainer_div2[z])
-                    px2 = go_encodeLSB(px2,kontainer_div2[z])
+                    # print(testpx)
+                    testpx = go_encodeLSB(testpx,kontainer_div4[z])
+                    # print(testpx)
+                    # print("=====")
+                    # px2[0] = testpx
+                    #LF px2[0][0],px2[0][1],px2[1][0],px2[2][0],px2[1][1],px2[0][2],px2[0][3],px2[1][2] = testpx[0] 
+                    px2[0][3],px2[1][2],px2[2][1],px2[3][0],px2[4][0],px2[3][1],px2[2][2],px2[1][3] = testpx[0]
+                    #HF px2[7][7],px2[7][6],px2[6][7],px2[5][7],px2[6][6],px2[7][5],px2[6][5],px2[5][6] = testpx[0]
+                    # px2[0],px2[1] = testpx
+                    # z += 1
+                    # px2[7] = go_encodeLSB(px2[7],kontainer_div3[z])
                     # print(kontainer_div2[z])
                     # px2 = go_encodeAlt(px2,kontainer_div2[z])
                     
-
                     # px2 = np.uint8(cv2.idct(np.float32(px2)))
-                    # px2 = np.around(cv2.idct(np.float32(px2))).astype(int)
+                    px2 = np.around(cv2.idct(np.float32(px2*quant))).astype(int)
 
                     if rgb== 0:
                         r1[i:i+8,j:j+8] = px2
@@ -273,7 +359,7 @@ def process_encode(cover_img, hidden_text):
                     break
                 j = j + 8
             i = i + 8
-
+    
     img = cv2.merge((b1,g1,r1))
     stegoDCT = img
     cek = cv2.imwrite(RESULT_FOLDER + encode_folder +"/DCT-" + cover_img, img)
@@ -359,10 +445,11 @@ def process_encode(cover_img, hidden_text):
             while j<(int(y/8))*8:
                 px3 = px1[i:i+8,j:j+8]
                 # print(px3)
-                cA, (cH, cV, cD) = dwt2(px3, 'haar')  
-                cD = np.round(cv2.dct(np.float32(cD))).astype(int)
-                cD = np.around(cD).astype(int)
+                
                 if z<len(kontainer_div3):
+                    cA, (cH, cV, cD) = dwt2(px3, 'haar')  
+                    cD = np.round(cv2.dct(np.float32(cD))).astype(int)
+                    cD = np.around(cD).astype(int)
                     # print(z, " ", kontainer_div3[z])
                     cD = go_encodeLSB(cD,kontainer_div3[z])
                     # cD = np.round(cv2.idct(np.float32(cD))).astype(int)
@@ -400,9 +487,62 @@ def process_encode(cover_img, hidden_text):
     # print(result_data)
     return result_data
 
+def newgo_decodeLSB(stegoImage):
+    r1, g1, b1 = cv2.split(stegoImage)
+    print(stegoImage)
+    kontainer = ''
+    stop_kontainer = ''
+    height,width = np.shape(r1)
+    index = 0
+    row_stop = 0
+    col_stop = 0
+    stop_status = 0
+    for row in range(height):
+        for col in range(width):
+            for i in range(3):
+                if stop_status == 0:
+                    if i == 0:    
+                        rbit_temp = f'{r1[row][col]:08b}'
+                        kontainer = kontainer + rbit_temp[-1]
+                    elif i == 1:
+                        gbit_temp = f'{g1[row][col]:08b}'
+                        kontainer = kontainer + gbit_temp[-1]
+                    elif i == 2:
+                        bbit_temp = f'{b1[row][col]:08b}'
+                        kontainer = kontainer +bbit_temp[-1]
+                    index = index + 1
+                # bit_temp = f'{px[row][col]:08b}'
+                # kontainer = kontainer + bit_temp[-1]
+                # index = index + 1
+
+                    if index%8 == 0:
+                        stop_kontainer = stop_kontainer + chr(int(kontainer,2))
+                        if '~@&' in stop_kontainer:
+                            stop_status = 999
+                            row_stop = 1
+                            print("STOP skuy")
+                            break
+                        else:
+                            kontainer = ''
+                else:
+                    row_stop = 1
+                    col_stop = 1
+                    break
+            if col_stop != 0:
+                break
+        if row_stop != 0:
+            break
+    # print(px)
+    decodeLSB_result = stop_kontainer
+    return decodeLSB_result
+
 def go_decodeLSB(px):
     kontainer = ''
     stop_kontainer = ''
+    # if np.ndim(px) == 1:
+    #     height = 1
+    #     width = len(px)
+    # else:
     height,width = np.shape(px)
     index = 0
     row_stop = 0
@@ -474,6 +614,7 @@ def process_decode(stego_img,stego_method,mode):
     
     
     if stego_method == 'LSB':
+        # kontainer = newgo_decodeLSB(stegoImage)
         r1, g1, b1 = cv2.split(stegoImage)
         x = 0
         kontainer = ''
@@ -489,7 +630,7 @@ def process_decode(stego_img,stego_method,mode):
                 kontainer = kontainer + go_decodeLSB(px1)
             else:
                 break
-
+        
         for i in range(len(kontainer)):
             if kontainer[i] == '~' and kontainer[i+1] == '@' and kontainer[i+2] == '&':
                 kontainer = kontainer[0:i]
@@ -504,6 +645,7 @@ def process_decode(stego_img,stego_method,mode):
         stop_all = 0
         kontainer = ''
         for rgb in range(3):
+            print(rgb)
             if rgb== 0:
                 px1 = r1
             elif rgb == 1:
@@ -517,12 +659,23 @@ def process_decode(stego_img,stego_method,mode):
                 while j<(int(y/8))*8:
                     px2 = px1[i:i+8,j:j+8]
                     # px2 = np.uint8(cv2.dct(np.float32(px2)))
-                    # px2 = np.around(cv2.dct(np.float32(px2))).astype(int)  
+                    px2 = np.around(cv2.dct(np.float32(px2)), 1)  
+                    px2 = np.around(px2/quant).astype(int)
+                    # testpx = px2[0]
+                    # testpx = np.vstack((px2[0],px2[1]))
+                    #LF newpx = [px2[0][0],px2[0][1],px2[1][0],px2[2][0],px2[1][1],px2[0][2],px2[0][3],px2[1][2]]
+                    newpx = [px2[0][3],px2[1][2],px2[2][1],px2[3][0],px2[4][0],px2[3][1],px2[2][2],px2[1][3]]
+                    #HF newpx = [px2[7][7],px2[7][6],px2[6][7],px2[5][7],px2[6][6],px2[7][5],px2[6][5],px2[5][6]]
+                    testpx = np.vstack((newpx,px2[1]))
+                    # if z <7:
+                    #     print(testpx)
                     if '~@&' not in kontainer:
-                            kontainer = kontainer + go_decodeLSB(px2)
-                            # kontainer = kontainer + go_decodeAlt(px2)
-                            # print(kontainer)
-                            z = z + 1
+                        kontainer = kontainer + go_decodeLSB(testpx)
+                        kontainer = kontainer[0:-1]
+                        # print(kontainer)
+                        # if z < 20:
+                        #     print(kontainer)
+                        z = z + 1
                     else:
                         print("DCTtekan kene ra sih?")
                         stop_all = 1
@@ -538,6 +691,7 @@ def process_decode(stego_img,stego_method,mode):
         for i in range(len(kontainer)):
             if kontainer[i] == '~' and kontainer[i+1] == '@' and kontainer[i+2] == '&':
                 kontainer = kontainer[0:i]
+                # print("isi kontener=", kontainer)
                 break
 
     elif stego_method == 'DWT':

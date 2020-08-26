@@ -8,6 +8,9 @@ n = -6.5
 
 print(chr(int('00100110',2)))
 print(chr(int('01000000',2)))
+
+cek = np.array([154,150,169,100])
+print(len(cek))
 # for x in range((int(500/8))*8):
 #   print(x) 
 # i=0

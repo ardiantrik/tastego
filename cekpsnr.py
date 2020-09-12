@@ -16,7 +16,7 @@ wm = cv2.cvtColor(wm, cv2.COLOR_BGR2GRAY)
 # r1, g1, b1 = cv2.split(wm)
 # x,y = np.shape(bw)
 
-print(x, " ",)
+print(x, " ",y)
 # print(thresh)
 # # dr1 = cv2.dct(np.float32(r1))
 # r2 = np.around(cv2.dct(np.float32(r1))).astype(int)

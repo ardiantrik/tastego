@@ -4,3 +4,4 @@ numpy
 pillow
 PyWavelets
 Flask
+gunicorn

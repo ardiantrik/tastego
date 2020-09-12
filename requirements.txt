@@ -1,5 +1,5 @@
 xlwt
-opencv-python
+opencv-python-headless
 numpy
 pillow
 PyWavelets

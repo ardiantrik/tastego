@@ -9,35 +9,38 @@ UPLOAD_FOLDER = os.getcwd() + '/assets/'
 
 # coverImage = cv2.imread(UPLOAD_FOLDER + "/cek/lenna.png",1)
 wm = cv2.imread(UPLOAD_FOLDER + "/cek/lenna.png",1)
+(x,y,z) = wm.shape
+wm = cv2.resize(wm,(400,400))
+wm = cv2.cvtColor(wm, cv2.COLOR_BGR2GRAY)
+(thresh, bw) = cv2.threshold(wm, 127, 255, cv2.THRESH_BINARY)
+# r1, g1, b1 = cv2.split(wm)
+# x,y = np.shape(bw)
 
-wm = cv2.cvtColor(wm, cv2.COLOR_BGR2RGB)
-r1, g1, b1 = cv2.split(wm)
-x,y = np.shape(r1)
-print(x, " ", y)
-print(r1)
-# dr1 = cv2.dct(np.float32(r1))
-r2 = np.around(cv2.dct(np.float32(r1))).astype(int)
-x,y = np.shape(r2)
-print(x, " ", y)
-print(r2)
-dr1 = np.around(cv2.idct(np.float32(r2))).astype(int)
-x,y = np.shape(dr1)
-print(x, " ", y)
-print(dr1)
-for i in range(x):
-    for j in range(y):
-        if (dr1[i,j]>255) or (dr1[i,j]<0):
-            print(dr1[i,j])
-            dr1[i,j] = 255
-counterss = 0
-for i in range(x):
-    for j in range(y):
-        if (dr1[i,j]>255) or (dr1[i,j]<0):
-            counterss += 1
+print(x, " ",)
+# print(thresh)
+# # dr1 = cv2.dct(np.float32(r1))
+# r2 = np.around(cv2.dct(np.float32(r1))).astype(int)
+# x,y = np.shape(r2)
+# print(x, " ", y)
+# print(r2)
+# dr1 = np.around(cv2.idct(np.float32(r2))).astype(int)
+# x,y = np.shape(dr1)
+# print(x, " ", y)
+# print(dr1)
+# for i in range(x):
+#     for j in range(y):
+#         if (dr1[i,j]>255) or (dr1[i,j]<0):
+#             print(dr1[i,j])
+#             dr1[i,j] = 255
+# counterss = 0
+# for i in range(x):
+#     for j in range(y):
+#         if (dr1[i,j]>255) or (dr1[i,j]<0):
+#             counterss += 1
 
-print(counterss)
-img = cv2.merge((b1,g1,dr1))
-cek = cv2.imwrite(UPLOAD_FOLDER + "/cek/cekdct/DCTR2-lenna.png", img)
+# print(counterss)
+# img = cv2.merge((b1,g1,dr1))
+# cek = cv2.imwrite(UPLOAD_FOLDER + "/cek/cekdct/DCTR2-lenna.png", img)
 
 
 # x,y = np.shape(r1)

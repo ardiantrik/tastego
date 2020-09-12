@@ -39,13 +39,15 @@ cek = np.array([[154,150,169,100,154,150,169,100],
 # cek = np.array([[154,150],
 #                 [171,136]])
 
-# cek_dct = cv2.dct(np.float32(cek))
-# # cek_dct = np.uint8(cek_dct)
-# # cek_dct = np.uint8(dct(cek))
-# # cek_dct = np.around(cek_dct).astype(int)
-# cek_dct = np.around(cek_dct, 1)
-# cekdct = np.around(cek_dct/quant).astype(int)
-# print(cekdct)
+cek_dct = cv2.dct(np.float32(cek))
+# cek_dct = np.uint8(cek_dct)
+# cek_dct = np.uint8(dct(cek))
+# cek_dct = np.around(cek_dct).astype(int)
+cek_dct = np.around(cek_dct, 1)
+print(cek_dct)
+print("==================")
+cekdct = np.around(cek_dct/quant).astype(int)
+print(cekdct)
 # # cekdct[0][2] = cekdct[0][2]+1
 # # cekdct[0][1] = cekdct[0][1]+1
 # # cekdct[0][0] = cekdct[0][0]+1
@@ -154,10 +156,10 @@ cek = np.array([[154,150,169,100,154,150,169,100],
 #     x = x+1
 # print(kontainer)
 
-mata = np.array([[1,6],
-                [4,3]])
+# mata = np.array([[1,6],
+#                 [4,3]])
 
-matb = np.array([[2,7],
-                 [1,4]])
+# matb = np.array([[2,7],
+#                  [1,4]])
 
-print(mata*matb)
+# print(mata*matb)

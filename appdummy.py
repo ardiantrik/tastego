@@ -46,20 +46,17 @@ def go_upload(file_up,id):
 def go_psnr(cover_img,stego_img):
     dimensiCover = np.shape(cover_img)
     dimensiStego = np.shape(stego_img)
-    print(dimensiCover[0]*dimensiCover[1])
-    # [0] = height, [1] = width, [2] = color channel
     if (dimensiCover[0]*dimensiCover[1]) != (dimensiStego[0]*dimensiStego[1]):
         mse = (dimensiCover[0]*dimensiCover[1])-(dimensiStego[0]*dimensiStego[1])
-        # psnr = "Beda Dimensi"
+        # eucDist= "Beda Dimensi"
     else:
         mse = np.mean((cover_img - stego_img) ** 2 )
-        
+
     if mse == 0:
         psnr = 100
     else:
         PIXEL_MAX = 255.0
         psnr = 20 * math.log10(PIXEL_MAX / math.sqrt(mse))
-    
     return mse,psnr
 
 def go_eucDist(cover_img,stego_img):
@@ -68,23 +65,14 @@ def go_eucDist(cover_img,stego_img):
     if (dimensiCover[0]*dimensiCover[1]) != (dimensiStego[0]*dimensiStego[1]):
         eucDist= "Beda Dimensi"
     else:
-        b1, g1, r1 = cv2.split(cover_img)
-        b2, g2, r2 = cv2.split(stego_img)
+        r1, g1, b1 = cv2.split(cover_img)
+        r2, g2, b2 = cv2.split(stego_img)
 
-        rs = np.sum((np.subtract(r1.astype(int),r2.astype(int)))**2)
-        gs = np.sum((np.subtract(g1.astype(int),g2.astype(int)))**2)
-        bs = np.sum((np.subtract(b1.astype(int),b2.astype(int)))**2)
+        rs = np.sum(np.subtract(r1.astype(int),r2.astype(int)))
+        gs = np.sum(np.subtract(g1.astype(int),g2.astype(int)))
+        bs = np.sum(np.subtract(b1.astype(int),b2.astype(int)))
 
-        # rs = (np.subtract(r1.astype(int),r2.astype(int)))**2
-        # gs = (np.subtract(g1.astype(int),g2.astype(int)))**2
-        # bs = (np.subtract(b1.astype(int),b2.astype(int)))**2
-        # print((np.subtract(r1.astype(int),r2.astype(int)))**2)
-        # print(rs," ",gs," ",bs)
-        cs = rs+gs+bs
-        # print(abs(cs))
-        eucDist = math.sqrt(abs(cs))
-        # eucDist = np.sum(np.sqrt(abs(cs)))
-        # eucDist = math.sqrt((rs**2)+(gs**2)+(bs**2))
+        eucDist = math.sqrt((rs**2)+(gs**2)+(bs**2))
 
     return eucDist
 
@@ -141,10 +129,6 @@ def newgo_encodeLSB(coverImage,kontainer):
 
 def go_encodeLSB(px,kontainer):
     hit_kontainer = len(kontainer)
-    # if np.ndim(px) == 1:
-    #     height = 1
-    #     width = len(px)
-    # else:
     height,width = np.shape(px)
     index = 0
     row_stop = 0
@@ -162,7 +146,6 @@ def go_encodeLSB(px,kontainer):
                 break
         if row_stop != 0:
             break
-    # print(px)
     return px
 
 def go_encodeAlt(px,kontainer):
@@ -184,110 +167,73 @@ def go_encodeAlt(px,kontainer):
     return px
 
 def process_encode(cover_img, hidden_text):
-    global coverImage, r1, g1, b1, r2, b2, g2
-
+    # baca gambar
     coverImage = cv2.imread(UPLOAD_FOLDER + "/" + cover_img,1)
     cover = coverImage
+    # convert BGR ke RGB
     coverImage = cv2.cvtColor(coverImage, cv2.COLOR_BGR2RGB)
-    # cover = coverImage
+    
+    # preprocess pesan 
     hid = hidden_text+'~@&'
     hit_hidden = len(hid)
-    # print(hid)
+    
+    # wadah buat pesan
     kontainer = ''
-    kontainer2 = ''
-    kontainer3 = ''
-    kontainer4 = ''
-    kontainer_div = [['']]
-    kontainer_div2 = [['']]
-    kontainer_div3 = [['']]
-    kontainer_div4 = [['']]
+    kontainer16 = ''
+    kontainer8 = ''
+    kont_div = [['']]
+    kont_div16 = [['']]
+    kont_div8 = [['']]
 
     x = 0
     y = 0
     for i in range(hit_hidden):
-        # print(i, " " , hid[i])
+        # persiapan pembagian bagian2 pesan
         kontainer = kontainer + f'{ord(hid[i]):08b}'
-        kontainer2 = kontainer2 + f'{ord(hid[i]):08b}'
-        # kontainer2 = kontainer2 + hid[i]
-        kontainer3 = kontainer3 + f'{ord(hid[i]):08b}'
-        kontainer4 = kontainer4 + f'{ord(hid[i]):08b}'
-        if (i+1)%8 == 0:
-            if x == 0:
-                kontainer_div2[x] = kontainer2
-            else:
-                kontainer_div2.append(kontainer2)
-            kontainer2 = ''
-            x = x + 1
+        kontainer16 = kontainer16 + f'{ord(hid[i]):08b}'
+        kontainer8 = kontainer8 + f'{ord(hid[i]):08b}'
         
+        # pesan dibagi menjadi 8-bit perbagian
         if i == 0:
-            kontainer_div4[0] = kontainer4
+            kont_div8[0] = kontainer8
         else:
-            kontainer_div4.append(kontainer4)
-        kontainer4 = ''
-        # # NGGO DCT ALT ENCODE
-        # if (i+1)%64 == 0:
-        #     if x == 0:
-        #         kontainer_div2[x] = kontainer2
-        #     else:
-        #         kontainer_div2.append(kontainer2)
-        #     kontainer2 = ''
-        #     x = x + 1
+            kont_div8.append(kontainer8)
+        kontainer8 = ''
 
+        # pesan dibagi menjadi 16-bit perbagian
         if (i+1)%2 == 0:
             if y == 0:
-                kontainer_div3[y] = kontainer3
+                kont_div16[y] = kontainer16
             else:
-                kontainer_div3.append(kontainer3)
-            kontainer3 = ''
+                kont_div16.append(kontainer16)
+            kontainer16 = ''
             y = y + 1
-    # print(kontainer2)
-    if kontainer2 != '' and kontainer_div2 == [['']]:
-        kontainer_div2[0] = kontainer2
-    elif kontainer2!= '':
-        kontainer_div2.append(kontainer2)
-    if kontainer3 != '':
-        kontainer_div3.append(kontainer3)
-    # print(kontainer_div4)
-    # print(len(kontainer_div2))
-
-    # print(kontainer_div)
-    # print(len(kontainer_div))
-
-    r1, g1, b1 = cv2.split(coverImage)
     
-    #LSB tok
+    if kontainer16 != '':
+        kont_div16.append(kontainer16)
+    
+    #LSB
+    #membagi matriks citra sesuai ruang warna RGB
     r1, g1, b1 = cv2.split(coverImage)
     p,l = np.shape(r1)
     x = 0
     kont = ''
+    # membagi pesan bila panjang pesan melebihi kapasitas cover
     if len(kontainer)>(p*l):
         for i in range(len(kontainer)):
             kont = kont + kontainer[i]
             if (i+1)%(p*l) == 0:
                 if x == 0:
-                    kontainer_div[x] = kont
+                    kont_div[x] = kont
                 else:
-                    kontainer_div.append(kont)
+                    kont_div.append(kont)
                 kont = ''
                 x = x + 1
                 print(x)
-        
         if kont != '':
-            kontainer_div.append(kont)
-        # print(kontainer_div)
-            # if i == 0:
-            #     kontainer_div[x] = kontainer[i]
-            # elif i == (p*l):
-            #     kontainer_div[x] = kontainer[i]
-            #     x = x + 1
-            #     print("here")
-            # else:
-            #     kontainer_div[x] = kontainer_div[x] + kontainer[i]
-            #     # kontainer_div.append(kontainer)
-            #     # print(kontainer_div)
+            kont_div.append(kont)
     else:
-        kontainer_div[x] = kontainer
-    # print(kontainer_div)
+        kont_div[x] = kontainer
     x = 0
     for i in range(3):
         if i== 0:
@@ -297,21 +243,20 @@ def process_encode(cover_img, hidden_text):
         elif i == 2:
             px1 = b1
 
-        if x<len(kontainer_div):
-            px1 = go_encodeLSB(px1,kontainer_div[i])
-
+        if x<len(kont_div):
+            # proses sisip
+            px1 = go_encodeLSB(px1,kont_div[i])
             if i== 0:
                 r1 = px1
             elif i == 1:
                 g1 = px1
             elif i == 2:
                 b1 = px1
-
             x = x + 1
         else:
             break
+    # postprocess citra stego
     img = cv2.merge((b1,g1,r1))
-    # img = newgo_encodeLSB(coverImage,kontainer)
     stegoLSB = img
     cek = cv2.imwrite(RESULT_FOLDER + encode_folder +"/LSB-" + cover_img, img)
     mse,psnr = go_psnr(cover,stegoLSB)
@@ -325,7 +270,6 @@ def process_encode(cover_img, hidden_text):
     }
 
     #DCT
-    # bermasalah nang encode karena diround(pembulatan)
     r1, g1, b1 = cv2.split(coverImage)
     x,y = np.shape(r1)
     z=0
@@ -342,33 +286,27 @@ def process_encode(cover_img, hidden_text):
         while i<(int(x/8))*8:
             j=0
             while j<(int(y/8))*8:
+                # mengambil pixel dengan dimensi 8x8
                 px2 = px1[i:i+8,j:j+8]
-
-                # px2 = np.uint8(cv2.dct(np.float32(px2)))
-                if z<len(kontainer_div4):
+                if z<len(kont_div8):
+                    # proses DCT dan kuantisasi
                     px2 = np.around(cv2.dct(np.float32(px2)), 1)
                     px2 = np.around(px2/quant).astype(int)
-                    #LF newpx = [px2[0][0],px2[0][1],px2[1][0],px2[2][0],px2[1][1],px2[0][2],px2[0][3],px2[1][2]]
-                    newpx = [px2[0][3],px2[1][2],px2[2][1],px2[3][0],px2[4][0],px2[3][1],px2[2][2],px2[1][3]]
+
+                    #mengambil 8-bit baru
+                    newpx = [px2[0][0],px2[0][1],px2[1][0],px2[2][0],px2[1][1],px2[0][2],px2[0][3],px2[1][2]]
+                    # newpx = [px2[0][3],px2[1][2],px2[2][1],px2[3][0],px2[4][0],px2[3][1],px2[2][2],px2[1][3]]
                     #HF newpx = [px2[7][7],px2[7][6],px2[6][7],px2[5][7],px2[6][6],px2[7][5],px2[6][5],px2[5][6]]
                     testpx = np.vstack((newpx,px2[1]))
-                    # testpx = np.vstack((px2[0],px2[1]))
-                    # print(z, " ", kontainer_div2[z])
-                    # print(testpx)
-                    testpx = go_encodeLSB(testpx,kontainer_div4[z])
-                    # print(testpx)
-                    # print("=====")
-                    # px2[0] = testpx
-                    #LF px2[0][0],px2[0][1],px2[1][0],px2[2][0],px2[1][1],px2[0][2],px2[0][3],px2[1][2] = testpx[0] 
-                    px2[0][3],px2[1][2],px2[2][1],px2[3][0],px2[4][0],px2[3][1],px2[2][2],px2[1][3] = testpx[0]
-                    #HF px2[7][7],px2[7][6],px2[6][7],px2[5][7],px2[6][6],px2[7][5],px2[6][5],px2[5][6] = testpx[0]
-                    # px2[0],px2[1] = testpx
-                    # z += 1
-                    # px2[7] = go_encodeLSB(px2[7],kontainer_div3[z])
-                    # print(kontainer_div2[z])
-                    # px2 = go_encodeAlt(px2,kontainer_div2[z])
+                    # proses sisip pesan
+                    testpx = go_encodeLSB(testpx,kont_div8[z])
                     
-                    # px2 = np.uint8(cv2.idct(np.float32(px2)))
+                    #mengembalikan 8-bit ke tempat asal
+                    px2[0][0],px2[0][1],px2[1][0],px2[2][0],px2[1][1],px2[0][2],px2[0][3],px2[1][2] = testpx[0] 
+                    # px2[0][3],px2[1][2],px2[2][1],px2[3][0],px2[4][0],px2[3][1],px2[2][2],px2[1][3] = testpx[0]
+                    #HF px2[7][7],px2[7][6],px2[6][7],px2[5][7],px2[6][6],px2[7][5],px2[6][5],px2[5][6] = testpx[0]
+                    
+                    #proses IDCT dan kuantisasi
                     px2 = np.around(cv2.idct(np.float32(px2*quant))).astype(int)
 
                     if rgb== 0:
@@ -384,6 +322,7 @@ def process_encode(cover_img, hidden_text):
                 j = j + 8
             i = i + 8
     
+    # postprocess citra stego
     img = cv2.merge((b1,g1,r1))
     stegoDCT = img
     cek = cv2.imwrite(RESULT_FOLDER + encode_folder +"/DCT-" + cover_img, img)
@@ -414,14 +353,19 @@ def process_encode(cover_img, hidden_text):
         while i<(int(x/8))*8:
             j=0
             while j<(int(y/8))*8:
+                # mengambil pixel dengan dimensi 8x8
                 px3 = px1[i:i+8,j:j+8]
-                # print(px3)
+
+                # proses DHWT
                 cA, (cH, cV, cD) = dwt2(px3, 'haar')  
+                # pengambilan subband LH (cH)
                 cH = np.around(cH).astype(int)
-                if z<len(kontainer_div3):
-                    # print(z, " ", kontainer_div3[z])
-                    cH = go_encodeLSB(cH,kontainer_div3[z])
+                if z<len(kont_div16):
+                    # proses sisip pesan
+                    cH = go_encodeLSB(cH,kont_div16[z])
+                    # mengembalikkan subband LH
                     px3 = cA.astype(int),(cH.astype(int), cV.astype(int), cD.astype(int))
+                    # proses IDHWT
                     px3 = idwt2(px3, 'haar')
                     if rgb== 0:
                         r1[i:i+8,j:j+8] = px3
@@ -436,7 +380,7 @@ def process_encode(cover_img, hidden_text):
                 
                 j = j + 8
             i = i + 8
-    
+    # postprocess citra stego
     img = cv2.merge((b1,g1,r1))
     stegoDWT = img
     cek = cv2.imwrite(RESULT_FOLDER + encode_folder +"/DWT-" + cover_img, img)
@@ -467,17 +411,18 @@ def process_encode(cover_img, hidden_text):
         while i<(int(x/8))*8:
             j=0
             while j<(int(y/8))*8:
+                # mengambil pixel dengan dimensi 8x8
                 px3 = px1[i:i+8,j:j+8]
-                # print(px3)
-                
-                if z<len(kontainer_div3):
+                if z<len(kont_div16):
+                    # proses DHWT
                     cA, (cH, cV, cD) = dwt2(px3, 'haar')  
-                    cD = np.round(cv2.dct(np.float32(cD))).astype(int)
-                    cD = np.around(cD).astype(int)
-                    # print(z, " ", kontainer_div3[z])
-                    cD = go_encodeLSB(cD,kontainer_div3[z])
-                    # cD = np.round(cv2.idct(np.float32(cD))).astype(int)
+                    # proses DCT
+                    cH = np.round(cv2.dct(np.float32(cH))).astype(int)
+                    cH = np.around(cH).astype(int)
+                    # proses sisip pesan
+                    cH = go_encodeLSB(cH,kont_div16[z])
                     px3 = cA.astype(int),(cH.astype(int), cV.astype(int), cD.astype(int))
+                    # proses IDWT
                     px3 = idwt2(px3, 'haar')
                     if rgb== 0:
                         r1[i:i+8,j:j+8] = px3
@@ -492,7 +437,7 @@ def process_encode(cover_img, hidden_text):
                 
                 j = j + 8
             i = i + 8
-    
+    # posprocessing citra stego
     img = cv2.merge((b1,g1,r1))
     stegoALL = img
     cek = cv2.imwrite(RESULT_FOLDER + encode_folder +"/ALL-" + cover_img, img)
@@ -507,8 +452,6 @@ def process_encode(cover_img, hidden_text):
     }
 
     result_data =[dataLSB,dataDCT,dataDWT,dataALL]
-    # result_data =[dataLSB, dataDCT]
-    # print(result_data)
     return result_data
 
 def newgo_decodeLSB(stegoImage):
@@ -627,18 +570,13 @@ def go_decodeAlt(px):
     return decodeLSB_result
     
 def process_decode(stego_img,stego_method,mode):
-    #LSB
-    # ======Iki kendalane ana nang pembatas=======
-    # hidden_obj= lsb.reveal(UPLOAD_FOLDER + "/" +stego_img)
     if mode == 1:
         stegoImage = cv2.imread(UPLOAD_FOLDER + "/" + stego_img,1)
     else:
         stegoImage = cv2.imread(os.getcwd() + stego_img,1)
     stegoImage = cv2.cvtColor(stegoImage, cv2.COLOR_BGR2RGB)
     
-    
     if stego_method == 'LSB':
-        # kontainer = newgo_decodeLSB(stegoImage)
         r1, g1, b1 = cv2.split(stegoImage)
         x = 0
         kontainer = ''
@@ -653,6 +591,7 @@ def process_decode(stego_img,stego_method,mode):
             if '~@&' not in kontainer:
                 kontainer = kontainer + go_decodeLSB(px1)
             else:
+                print("Log LSB: Stop Decode")
                 break
         
         for i in range(len(kontainer)):
@@ -661,7 +600,6 @@ def process_decode(stego_img,stego_method,mode):
                 break
 
     elif stego_method == 'DCT':
-        # print("================DEKODE===============")
         r1, g1, b1 = cv2.split(stegoImage)
         x,y = np.shape(r1)
         z=0
@@ -682,26 +620,17 @@ def process_decode(stego_img,stego_method,mode):
                 j=0
                 while j<(int(y/8))*8:
                     px2 = px1[i:i+8,j:j+8]
-                    # px2 = np.uint8(cv2.dct(np.float32(px2)))
                     px2 = np.around(cv2.dct(np.float32(px2)), 1)  
                     px2 = np.around(px2/quant).astype(int)
-                    # testpx = px2[0]
-                    # testpx = np.vstack((px2[0],px2[1]))
-                    #LF newpx = [px2[0][0],px2[0][1],px2[1][0],px2[2][0],px2[1][1],px2[0][2],px2[0][3],px2[1][2]]
-                    newpx = [px2[0][3],px2[1][2],px2[2][1],px2[3][0],px2[4][0],px2[3][1],px2[2][2],px2[1][3]]
-                    #HF newpx = [px2[7][7],px2[7][6],px2[6][7],px2[5][7],px2[6][6],px2[7][5],px2[6][5],px2[5][6]]
+                    newpx = [px2[0][0],px2[0][1],px2[1][0],px2[2][0],px2[1][1],px2[0][2],px2[0][3],px2[1][2]]
+                    # newpx = [px2[0][3],px2[1][2],px2[2][1],px2[3][0],px2[4][0],px2[3][1],px2[2][2],px2[1][3]]
                     testpx = np.vstack((newpx,px2[1]))
-                    # if z <7:
-                    #     print(testpx)
                     if '~@&' not in kontainer:
                         kontainer = kontainer + go_decodeLSB(testpx)
                         kontainer = kontainer[0:-1]
-                        # print(kontainer)
-                        # if z < 20:
-                        #     print(kontainer)
                         z = z + 1
                     else:
-                        print("DCTtekan kene ra sih?")
+                        print("Log DCT: Stop Decode")
                         stop_all = 1
                         break
                     j = j + 8
@@ -715,11 +644,9 @@ def process_decode(stego_img,stego_method,mode):
         for i in range(len(kontainer)):
             if kontainer[i] == '~' and kontainer[i+1] == '@' and kontainer[i+2] == '&':
                 kontainer = kontainer[0:i]
-                # print("isi kontener=", kontainer)
                 break
 
     elif stego_method == 'DWT':
-        # print("================DEKODE===============")
         r1, g1, b1 = cv2.split(stegoImage)
         x,y = np.shape(r1)
         z=0
@@ -746,55 +673,7 @@ def process_decode(stego_img,stego_method,mode):
                             # print(kontainer)
                             z = z + 1
                     else:
-                        print("DWTtekan kene ra sih?")
-                        stop_all = 1
-                        break
-                    j = j + 8
-                if stop_all != 0:
-                    break
-                else:
-                    i = i + 8
-            if stop_all != 0:
-                break
-        for i in range(len(kontainer)):
-            if (i+2)>len(kontainer):
-                break
-            elif kontainer[i] == '~' and kontainer[i+1] == '@' and kontainer[i+2] == '&':
-                kontainer = kontainer[0:i]
-                break
-            
-
-    elif stego_method == 'ALL':
-        # print("================DEKODE===============")
-        r1, g1, b1 = cv2.split(stegoImage)
-        x,y = np.shape(r1)
-        z=0
-        
-        stop_all = 0
-        kontainer = ''
-        for rgb in range(3):
-            print(rgb)
-            if rgb== 0:
-                px1 = r1
-            elif rgb == 1:
-                px1 = g1
-            elif rgb == 2:
-                px1 = b1
-                
-            i=0
-            while i<(int(x/8))*8:
-                j=0
-                while j<(int(y/8))*8:
-                    px3 = px1[i:i+8,j:j+8]
-                    cA, (cH, cV, cD) = dwt2(px3, 'haar')   
-                    # cD = np.round(cv2.dct(np.float32(cD))).astype(int)  
-                    cD = np.around(cD).astype(int)
-                    if '~@&' not in kontainer:
-                            kontainer = kontainer + go_decodeLSB(cD)
-                            # print(kontainer)
-                            z = z + 1
-                    else:
-                        print("ALLtekan kene ra sih?")
+                        print("Log DWT: Stop Decode")
                         stop_all = 1
                         break
                     j = j + 8
@@ -809,7 +688,49 @@ def process_decode(stego_img,stego_method,mode):
                 kontainer = kontainer[0:i]
                 break
 
-    # print(kontainer)
+    elif stego_method == 'ALL':
+        r1, g1, b1 = cv2.split(stegoImage)
+        x,y = np.shape(r1)
+        z=0
+        
+        stop_all = 0
+        kontainer = ''
+        for rgb in range(3):
+            if rgb== 0:
+                px1 = r1
+            elif rgb == 1:
+                px1 = g1
+            elif rgb == 2:
+                px1 = b1
+                
+            i=0
+            while i<(int(x/8))*8:
+                j=0
+                while j<(int(y/8))*8:
+                    px3 = px1[i:i+8,j:j+8]
+                    cA, (cH, cV, cD) = dwt2(px3, 'haar')   
+                    # cD = np.round(cv2.dct(np.float32(cD))).astype(int)  
+                    cH = np.around(cH).astype(int)
+                    if '~@&' not in kontainer:
+                            kontainer = kontainer + go_decodeLSB(cH)
+                            # print(kontainer)
+                            z = z + 1
+                    else:
+                        print("Log ALL: Stop Decode")
+                        stop_all = 1
+                        break
+                    j = j + 8
+                if stop_all != 0:
+                    break
+                else:
+                    i = i + 8
+            if stop_all != 0:
+                break
+        for i in range(len(kontainer)):
+            if kontainer[i] == '~' and kontainer[i+1] == '@' and kontainer[i+2] == '&':
+                kontainer = kontainer[0:i]
+                break
+
     hidden_obj = kontainer
     return hidden_obj
 

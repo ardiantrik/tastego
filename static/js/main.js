@@ -99,6 +99,7 @@ function sendPSNR(fd){
 				console.log(response);
 				document.getElementById("idnPSNR").innerHTML = "PSNR : " + response.psnr;
 				document.getElementById("idnMSE").innerHTML =  "MSE  : " + response.mse;
+				document.getElementById("idnED").innerHTML =  "Eucledean Distance RGB  : " + response.eucDist;
 				// var str = String(response);
 				// var cek = str.includes("data:image/png;base64,");
 				// console.log(cek);

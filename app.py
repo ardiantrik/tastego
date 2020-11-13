@@ -71,6 +71,7 @@ def go_eucDist(cover_img,stego_img):
         b1, g1, r1 = cv2.split(cover_img)
         b2, g2, r2 = cv2.split(stego_img)
 
+        # iki sek bener
         rs = np.sum((np.subtract(r1.astype(int),r2.astype(int)))**2)
         gs = np.sum((np.subtract(g1.astype(int),g2.astype(int)))**2)
         bs = np.sum((np.subtract(b1.astype(int),b2.astype(int)))**2)

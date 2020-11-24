@@ -13,7 +13,8 @@
         <div class="card-content">
           <span class="card-title">{{ result.method }}</span>
           MSE: {{ result.mse }} <br>
-          PSNR: {{ result.psnr }} 
+          PSNR: {{ result.psnr }} <br>
+          Eclidean Distance: {{ result.eucDist }} 
           <img src="{{ result.file_loc }}" class="responsive-img" style="max-height: 350px;">
         </div>
         <!-- <option hidden value="{{ result.method }}"></option> -->

@@ -66,40 +66,59 @@ wm = cv2.cvtColor(wm, cv2.COLOR_BGR2RGB)
 # r1, g1, b1 = cv2.split(cekcoba)
 
 
-cek1 = np.array([[100,226,60,150],
-                [20,60,40,30],
-                [50,90,70,82],
-                [74,66,90,58]])
+# cek1 = np.array([[100,226,60,150],
+#                 [20,60,40,30],
+#                 [50,90,70,82],
+#                 [74,66,90,58]])
 
-cek2 = np.array([[90,227,30,110],
-                [90,60,50,40],
-                [70,20,70,82],
-                [14,56,90,54]])
+# cek2 = np.array([[90,227,30,110],
+#                 [90,60,50,40],
+#                 [70,20,70,82],
+#                 [14,56,90,54]])
 
-r1, g1, b1 = cv2.split(coverImage)
-r2, g2, b2 = cv2.split(wm)
-# print(r1)
-# print("========")
-# print(r2)
-# print("========")
-# print(np.sum(np.subtract(r1.astype(int),r2.astype(int))))
-# rs = np.sum(np.subtract(r1.astype(int),r2.astype(int)))
-# gs = np.sum(np.subtract(g1.astype(int),g2.astype(int)))
-# bs = np.sum(np.subtract(b1.astype(int),b2.astype(int)))
-rs = np.subtract(r1.astype(int),r2.astype(int))**2
-gs = np.subtract(g1.astype(int),g2.astype(int))**2
-bs = np.subtract(b1.astype(int),b2.astype(int))**2
-cekkin = np.subtract(cek1.astype(int),cek2.astype(int))**2
-# print(np.subtract(cek1.astype(int),cek2.astype(int)))
-print(np.sum(np.sqrt(abs(cekkin))))
-# eucDist = math.sqrt((rs**2)+(gs**2)+(bs**2))
-# print(eucDist)
+cek2 = np.array([[155,150,169,65],
+                [70,96,135,141],
+                [130,150,95,99],
+                [146,100,124,109]])
+
+cek1 = np.array([[154,150,169,65],
+                [70,96,136,141],
+                [130,150,95,99],
+                [146,99,124,109]])
+
+# r1, g1, b1 = cv2.split(coverImage)
+# r2, g2, b2 = cv2.split(wm)
+# # print(r1)
+# # print("========")
+# # print(r2)
+# # print("========")
+# # print(np.sum(np.subtract(r1.astype(int),r2.astype(int))))
+# # rs = np.sum(np.subtract(r1.astype(int),r2.astype(int)))
+# # gs = np.sum(np.subtract(g1.astype(int),g2.astype(int)))
+# # bs = np.sum(np.subtract(b1.astype(int),b2.astype(int)))
+# rs = np.subtract(r1.astype(int),r2.astype(int))**2
+# gs = np.subtract(g1.astype(int),g2.astype(int))**2
+# bs = np.subtract(b1.astype(int),b2.astype(int))**2
+# cekkin = np.subtract(cek1.astype(int),cek2.astype(int))**2
+# # print(np.subtract(cek1.astype(int),cek2.astype(int)))
+# print(np.sum(np.sqrt(abs(cekkin))))
+# # eucDist = math.sqrt((rs**2)+(gs**2)+(bs**2))
+# # print(eucDist)
+
+jarak = np.sum((np.subtract(cek1.astype(int),cek2.astype(int)))**2)
+print(jarak)
+eucDist = math.sqrt(jarak)
+print(eucDist)
+
+
 # mse = np.mean((coverImage - wm) ** 2 )
-# # print("MSE : " + str(mse))
-# # # if mse == 0:
-# # #     psnr = 100
-# # # else:
-# # #     PIXEL_MAX = 255.0
-# # #     psnr = 20 * math.log10(PIXEL_MAX / math.sqrt(mse))
+# mse = np.mean((cek1 - cek2) ** 2 )
+# print((cek1 - cek2) ** 2 )
+# print("MSE : " + str(mse))
+# if mse == 0:
+#     psnr = 100
+# else:
+#     PIXEL_MAX = 255.0
+#     psnr = 20 * math.log10(PIXEL_MAX / math.sqrt(mse))
 
-# # # print("PSNR : " + str(psnr))
+# print("PSNR : " + str(psnr))

@@ -3,14 +3,14 @@ import numpy as np
 from scipy.fftpack import dct, idct
 from pywt import dwt2, idwt2, dwt, idwt
 
-# quant = np.array([[16,11,10,16,24,40,51,61],      # QUANTIZATION TABLE
-#                     [12,12,14,19,26,58,60,55],    # required for DCT
-#                     [14,13,16,24,40,57,69,56],
-#                     [14,17,22,29,51,87,80,62],
-#                     [18,22,37,56,68,109,103,77],
-#                     [24,35,55,64,81,104,113,92],
-#                     [49,64,78,87,103,121,120,101],
-#                     [72,92,95,98,112,100,103,99]])
+quant = np.array([[16,11,10,16,24,40,51,61],      # QUANTIZATION TABLE
+                    [12,12,14,19,26,58,60,55],    # required for DCT
+                    [14,13,16,24,40,57,69,56],
+                    [14,17,22,29,51,87,80,62],
+                    [18,22,37,56,68,109,103,77],
+                    [24,35,55,64,81,104,113,92],
+                    [49,64,78,87,103,121,120,101],
+                    [72,92,95,98,112,100,103,99]])
 
 # cek = np.array([[154,150,169,100],
 #                 [171,136,96,141],
@@ -41,7 +41,7 @@ cek = np.array([[154,150,169,100,154,150,169,100],
                 [146,130,95,99,146,130,95,99],
                 [150,99,124,109,150,99,124,109]])
 
-print(cek[0:4,4:7])
+# print(cek[0:4,4:7])
 
 # cek = np.array([[154,150],
 #                 [171,136]])
@@ -74,8 +74,9 @@ print(cek[0:4,4:7])
 # print(cekidct)
 # cek_dct = cv2.dct(np.float32(cekidct))
 # cek_dct = np.around(cek_dct, 1)
-# cekdct = np.around(cek_dct/quant).astype(int)
-# print(cekdct)
+# cekdct = np.around(cek/quant).astype(int)
+cekdct = (cek/quant).astype(int)
+print(cekdct)
 # print("==================")
 
 # cA, (cH, cV, cD) = dwt2(cek, 'haar')  

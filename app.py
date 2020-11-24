@@ -52,13 +52,13 @@ def go_psnr(cover_img,stego_img):
         mse = (dimensiCover[0]*dimensiCover[1])-(dimensiStego[0]*dimensiStego[1])
         # psnr = "Beda Dimensi"
     else:
-        mse = np.mean((cover_img - stego_img) ** 2 )
+        mse = np.mean(np.subtract(cover_img.astype(int),stego_img.astype(int)) ** 2 )
         
     if mse == 0:
         psnr = 100
     else:
         PIXEL_MAX = 255.0
-        psnr = 20 * math.log10(PIXEL_MAX / math.sqrt(mse))
+        psnr = round(20 * math.log10(PIXEL_MAX / math.sqrt(mse)), 2)
     
     return mse,psnr
 
@@ -83,7 +83,7 @@ def go_eucDist(cover_img,stego_img):
         # print(rs," ",gs," ",bs)
         cs = rs+gs+bs
         # print(abs(cs))
-        eucDist = math.sqrt(abs(cs))
+        eucDist = round(math.sqrt(abs(cs)), 2)
         # eucDist = np.sum(np.sqrt(abs(cs)))
         # eucDist = math.sqrt((rs**2)+(gs**2)+(bs**2))
 
@@ -315,14 +315,17 @@ def process_encode(cover_img, hidden_text):
     # img = newgo_encodeLSB(coverImage,kontainer)
     stegoLSB = img
     cek = cv2.imwrite(RESULT_FOLDER + encode_folder +"/LSB-" + cover_img, img)
+    stegoLSB = cv2.imread(RESULT_FOLDER + encode_folder +"/LSB-" + cover_img,1)
     mse,psnr = go_psnr(cover,stegoLSB)
+    eucDist = go_eucDist(cover,stegoLSB)
     print(mse, " ", psnr)
     dataLSB = {
         'file_name':"LSB-"+cover_img,
         'file_loc':"/static/result/"+ encode_folder +"/LSB-" + cover_img,
         'method':'LSB',
         'mse':mse,
-        'psnr':psnr
+        'psnr':psnr,
+        'eucDist':eucDist
     }
 
     #DCT
@@ -388,14 +391,17 @@ def process_encode(cover_img, hidden_text):
     img = cv2.merge((b1,g1,r1))
     stegoDCT = img
     cek = cv2.imwrite(RESULT_FOLDER + encode_folder +"/DCT-" + cover_img, img)
+    stegoDCT = cv2.imread(RESULT_FOLDER + encode_folder +"/DCT-" + cover_img,1)
     mse,psnr = go_psnr(cover,stegoDCT)
+    eucDist = go_eucDist(cover,stegoDCT)
     print(mse, " ", psnr)
     dataDCT = {
         'file_name':"DCT-"+cover_img,
         'file_loc':"/static/result/"+ encode_folder +"/DCT-" + cover_img,
         'method':'DCT',
         'mse':mse,
-        'psnr':psnr
+        'psnr':psnr,
+        'eucDist':eucDist
     }
 
     #DWT
@@ -441,14 +447,17 @@ def process_encode(cover_img, hidden_text):
     img = cv2.merge((b1,g1,r1))
     stegoDWT = img
     cek = cv2.imwrite(RESULT_FOLDER + encode_folder +"/DWT-" + cover_img, img)
+    stegoDWT = cv2.imread(RESULT_FOLDER + encode_folder +"/DWT-" + cover_img,1)
     mse,psnr = go_psnr(cover,stegoDWT)
+    eucDist = go_eucDist(cover,stegoDWT)
     print(mse, " ", psnr)
     dataDWT = {
         'file_name':"DWT-"+cover_img,
         'file_loc':"/static/result/"+ encode_folder +"/DWT-" + cover_img,
         'method':'DWT',
         'mse':mse,
-        'psnr':psnr
+        'psnr':psnr,
+        'eucDist':eucDist
     }
 
     # KOMBINASI
@@ -497,14 +506,17 @@ def process_encode(cover_img, hidden_text):
     img = cv2.merge((b1,g1,r1))
     stegoALL = img
     cek = cv2.imwrite(RESULT_FOLDER + encode_folder +"/ALL-" + cover_img, img)
+    stegoALL = cv2.imread(RESULT_FOLDER + encode_folder +"/ALL-" + cover_img,1)
     mse,psnr = go_psnr(cover,stegoALL)
+    eucDist = go_eucDist(cover,stegoALL)
     print(mse, " ", psnr)
     dataALL = {
         'file_name':"ALL-"+cover_img,
         'file_loc':"/static/result/"+ encode_folder +"/ALL-" + cover_img,
         'method':'ALL',
         'mse':mse,
-        'psnr':psnr
+        'psnr':psnr,
+        'eucDist':eucDist
     }
 
     result_data =[dataLSB,dataDCT,dataDWT,dataALL]

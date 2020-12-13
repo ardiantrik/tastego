@@ -75,17 +75,20 @@ cek = np.array([[154,150,169,100,154,150,169,100],
 # cek_dct = cv2.dct(np.float32(cekidct))
 # cek_dct = np.around(cek_dct, 1)
 # cekdct = np.around(cek/quant).astype(int)
-cekdct = (cek/quant).astype(int)
-print(cekdct)
+# cekdct = (cek/quant).astype(int)
+# print(cekdct)
 # print("==================")
 
-# cA, (cH, cV, cD) = dwt2(cek, 'haar')  
+cA, (cH, cV, cD) = dwt2(cek, 'haar')  
 # coeffs = cA, (cH, cV, cD)
+coeffs = np.round(cA).astype(int), (np.round(cH).astype(int), np.round(cV).astype(int), np.round(cD).astype(int))
+print(coeffs)
+coeffs = cA, (cH, cV, cD)
 # print(np.round(cD).astype(int))
 
-# print("==================")
-# cek_idwt = idwt2(coeffs, 'haar')
-# print(np.round(cek_idwt).astype(int))
+print("==================")
+cek_idwt = idwt2(coeffs, 'haar')
+print(np.round(cek_idwt).astype(int))
 
 # # cek3 = np.array([[88,80],
 # #                  [70,77]])

@@ -11,6 +11,7 @@ from datetime import datetime
 from pywt import dwt2, idwt2
 import math
 import random
+from test_method import *
 
 encode_folder = "Encoded_image_" + str(datetime.now().strftime("%Y-%m-%d_%H-%M"))
 decode_folder= "Decoded_image_" + str(datetime.now().strftime("%Y-%m-%d_%H-%M"))
@@ -290,24 +291,26 @@ def process_encode(cover_img, hidden_text):
                 px2 = px1[i:i+8,j:j+8]
                 if z<len(kont_div8):
                     # proses DCT dan kuantisasi
-                    px2 = np.around(cv2.dct(np.float32(px2)), 1)
+                    # px2 = np.around(cv2.dct(np.float32(px2)), 1)
+                    px2 = np.around(go_dct(np.float32(px2)), 1)
                     px2 = np.around(px2/quant).astype(int)
 
                     #mengambil 8-bit baru
-                    newpx = [px2[0][0],px2[0][1],px2[1][0],px2[2][0],px2[1][1],px2[0][2],px2[0][3],px2[1][2]]
-                    # newpx = [px2[0][3],px2[1][2],px2[2][1],px2[3][0],px2[4][0],px2[3][1],px2[2][2],px2[1][3]]
+                    #LF newpx = [px2[0][0],px2[0][1],px2[1][0],px2[2][0],px2[1][1],px2[0][2],px2[0][3],px2[1][2]]
+                    newpx = [px2[0][3],px2[1][2],px2[2][1],px2[3][0],px2[4][0],px2[3][1],px2[2][2],px2[1][3]]
                     #HF newpx = [px2[7][7],px2[7][6],px2[6][7],px2[5][7],px2[6][6],px2[7][5],px2[6][5],px2[5][6]]
                     testpx = np.vstack((newpx,px2[1]))
                     # proses sisip pesan
                     testpx = go_encodeLSB(testpx,kont_div8[z])
                     
                     #mengembalikan 8-bit ke tempat asal
-                    px2[0][0],px2[0][1],px2[1][0],px2[2][0],px2[1][1],px2[0][2],px2[0][3],px2[1][2] = testpx[0] 
-                    # px2[0][3],px2[1][2],px2[2][1],px2[3][0],px2[4][0],px2[3][1],px2[2][2],px2[1][3] = testpx[0]
+                    # px2[0][0],px2[0][1],px2[1][0],px2[2][0],px2[1][1],px2[0][2],px2[0][3],px2[1][2] = testpx[0] 
+                    px2[0][3],px2[1][2],px2[2][1],px2[3][0],px2[4][0],px2[3][1],px2[2][2],px2[1][3] = testpx[0]
                     #HF px2[7][7],px2[7][6],px2[6][7],px2[5][7],px2[6][6],px2[7][5],px2[6][5],px2[5][6] = testpx[0]
                     
                     #proses IDCT dan kuantisasi
-                    px2 = np.around(cv2.idct(np.float32(px2*quant))).astype(int)
+                    # px2 = np.around(cv2.idct(np.float32(px2*quant))).astype(int)
+                    px2 = np.around(go_idct(np.float32(px2*quant))).astype(int)
 
                     if rgb== 0:
                         r1[i:i+8,j:j+8] = px2
@@ -357,7 +360,8 @@ def process_encode(cover_img, hidden_text):
                 px3 = px1[i:i+8,j:j+8]
 
                 # proses DHWT
-                cA, (cH, cV, cD) = dwt2(px3, 'haar')  
+                # cA, (cH, cV, cD) = dwt2(px3, 'haar')  
+                cA, (cH, cV, cD) = go_dwt(px3)  
                 # pengambilan subband LH (cH)
                 cH = np.around(cH).astype(int)
                 if z<len(kont_div16):
@@ -366,7 +370,8 @@ def process_encode(cover_img, hidden_text):
                     # mengembalikkan subband LH
                     px3 = cA.astype(int),(cH.astype(int), cV.astype(int), cD.astype(int))
                     # proses IDHWT
-                    px3 = idwt2(px3, 'haar')
+                    # px3 = idwt2(px3, 'haar')
+                    px3 = go_idwt(px3)
                     if rgb== 0:
                         r1[i:i+8,j:j+8] = px3
                     elif rgb == 1:
@@ -415,15 +420,18 @@ def process_encode(cover_img, hidden_text):
                 px3 = px1[i:i+8,j:j+8]
                 if z<len(kont_div16):
                     # proses DHWT
-                    cA, (cH, cV, cD) = dwt2(px3, 'haar')  
+                    # cA, (cH, cV, cD) = dwt2(px3, 'haar') 
+                    cA, (cH, cV, cD) = go_dwt(px3)  
                     # proses DCT
-                    cH = np.round(cv2.dct(np.float32(cH))).astype(int)
+                    # cH = np.round(cv2.dct(np.float32(cH))).astype(int)
+                    cH = np.round(go_dct(np.float32(cH))).astype(int)
                     cH = np.around(cH).astype(int)
                     # proses sisip pesan
                     cH = go_encodeLSB(cH,kont_div16[z])
                     px3 = cA.astype(int),(cH.astype(int), cV.astype(int), cD.astype(int))
                     # proses IDWT
-                    px3 = idwt2(px3, 'haar')
+                    # px3 = idwt2(px3, 'haar')
+                    px3 = go_idwt(px3)
                     if rgb== 0:
                         r1[i:i+8,j:j+8] = px3
                     elif rgb == 1:
@@ -620,10 +628,11 @@ def process_decode(stego_img,stego_method,mode):
                 j=0
                 while j<(int(y/8))*8:
                     px2 = px1[i:i+8,j:j+8]
-                    px2 = np.around(cv2.dct(np.float32(px2)), 1)  
+                    # px2 = np.around(cv2.dct(np.float32(px2)), 1)  
+                    px2 = np.around(go_dct(np.float32(px2)), 1)
                     px2 = np.around(px2/quant).astype(int)
-                    newpx = [px2[0][0],px2[0][1],px2[1][0],px2[2][0],px2[1][1],px2[0][2],px2[0][3],px2[1][2]]
-                    # newpx = [px2[0][3],px2[1][2],px2[2][1],px2[3][0],px2[4][0],px2[3][1],px2[2][2],px2[1][3]]
+                    # newpx = [px2[0][0],px2[0][1],px2[1][0],px2[2][0],px2[1][1],px2[0][2],px2[0][3],px2[1][2]]
+                    newpx = [px2[0][3],px2[1][2],px2[2][1],px2[3][0],px2[4][0],px2[3][1],px2[2][2],px2[1][3]]
                     testpx = np.vstack((newpx,px2[1]))
                     if '~@&' not in kontainer:
                         kontainer = kontainer + go_decodeLSB(testpx)
@@ -666,7 +675,8 @@ def process_decode(stego_img,stego_method,mode):
                 j=0
                 while j<(int(y/8))*8:
                     px3 = px1[i:i+8,j:j+8]
-                    cA, (cH, cV, cD) = dwt2(px3, 'haar')   
+                    # cA, (cH, cV, cD) = dwt2(px3, 'haar')
+                    cA, (cH, cV, cD) = go_dwt(px3)    
                     cH = np.around(cH).astype(int)
                     if '~@&' not in kontainer:
                             kontainer = kontainer + go_decodeLSB(cH)
@@ -708,7 +718,8 @@ def process_decode(stego_img,stego_method,mode):
                 j=0
                 while j<(int(y/8))*8:
                     px3 = px1[i:i+8,j:j+8]
-                    cA, (cH, cV, cD) = dwt2(px3, 'haar')   
+                    # cA, (cH, cV, cD) = dwt2(px3, 'haar') 
+                    cA, (cH, cV, cD) = go_dwt(px3)     
                     # cD = np.round(cv2.dct(np.float32(cD))).astype(int)  
                     cH = np.around(cH).astype(int)
                     if '~@&' not in kontainer:

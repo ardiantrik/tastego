@@ -1,6 +1,7 @@
 # Tugas Akhir Steganografi (tastego)
 Repo Test File Tugas Akhir
 ----------------------
+App to Hide some text or an binary image (black and white only) to a digital image using LSB, DCT, DWT, and Combination of LSB+DCT+DWT(this combination is just trial, not so good tho)
 How to Use:
 1. install python (3.7 or above)
 2. install pip

@@ -13,6 +13,6 @@ How to Use:
 5. open browser and go to the showed IP on console (127.0.0.1:5000 or may be different from yours)
 6. Use it well :)
 
-OR go to www.steganomat35.herokuapp.com to use the app (still prototype tho)
+OR go to steganomat35.herokuapp.com to use the app (still prototype tho)
 -----------------------------------------
 If you have some questions about "this", send me email: ardiantrik@gmail.com
